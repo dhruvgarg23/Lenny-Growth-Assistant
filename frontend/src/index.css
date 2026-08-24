@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-system, -apple-system, Inter, sans-serif;
+}
+
+* { scrollbar-width: thin; scrollbar-color: #d4d4d8 transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; }
+
+/* prose tweaks */
+.prose :where(pre) { background: #18181b; color: #e4e4e7; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; }
+.prose :where(code):not(:where(pre code)) { background: #f4f4f5; padding: 0.15rem 0.35rem; border-radius: 0.25rem; font-size: 0.9em; }

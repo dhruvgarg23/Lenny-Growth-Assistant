@@ -1,0 +1,49 @@
+# ── Growth Assistant .gitignore ──
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+.next/
+out/
+
+# Vectors / data artifacts
+backend/vector_store/
+backend/data/_temp/
+*.faiss
+*.pkl
+
+# Secrets
+backend/.env
+frontend/.env
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+*.sqlite
+*.db
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+
+# Alembic
+# (keep alembic/versions)
+
+# Ollama models not committed
+ollama_data/

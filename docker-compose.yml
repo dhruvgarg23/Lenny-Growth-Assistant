@@ -1,0 +1,69 @@
+# ──────────────────────────────────────────────
+# The Lenny Growth Assistant — Docker Compose
+# Usage:
+#   cp backend/.env.example backend/.env   # no secrets needed for Ollama demo
+#   docker compose up --build              # frontend → :80, backend → :8000
+#   docker compose down
+# ──────────────────────────────────────────────
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: lenny_growth
+      POSTGRES_USER: lenny
+      POSTGRES_PASSWORD: lenny
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lenny -d lenny_growth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # Docker-internal DB URL (overrides host localhost if present)
+      DATABASE_URL: postgresql+asyncpg://lenny:lenny@postgres:5432/lenny_growth
+      # Ollama host access from container — use host.docker.internal on Docker Desktop
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      PYTHONUNBUFFERED: "1"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - backend-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  backend-data:
