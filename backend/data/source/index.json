@@ -1,0 +1,524 @@
+{
+  "schema_version": "2.0",
+  "generated_at": "2026-08-24T16:02:43.281733+00:00",
+  "podcasts": [
+    {
+      "title": "How to close $100K+ enterprise deals, step by step | Jen Abel",
+      "filename": "podcasts/jen-abel-3.md",
+      "word_count": 16621,
+      "date": "2026-08-23",
+      "description": "Close $100K+ enterprise deals, step by step, covering B2B products, team leadership, and startup building.",
+      "guest": "Jen Abel",
+      "post_url": "https://www.lennysnewsletter.com/p/how-to-close-100k-1m-deals-step-by"
+    },
+    {
+      "title": "OpenAI’s Head of Design: This is the best time in history to be a designer | Ian Silber",
+      "filename": "podcasts/ian-silber.md",
+      "word_count": 11768,
+      "date": "2026-08-16",
+      "description": "This is the best time in history to be a designer, covering product design, AI product work, and engineering tradeoffs.",
+      "guest": "Ian Silber",
+      "post_url": "https://www.lennysnewsletter.com/p/openais-head-of-design-this-is-the"
+    },
+    {
+      "title": "The playbook for building high talent density teams | Adam Ward, Head of Talent at Cursor",
+      "filename": "podcasts/adam-ward.md",
+      "word_count": 16673,
+      "date": "2026-08-09",
+      "description": "The playbook for building high talent density teams, covering product design, team leadership, and growth systems.",
+      "guest": "Adam Ward, Head of Talent at Cursor",
+      "post_url": "https://www.lennysnewsletter.com/p/the-playbook-for-building-high-talent"
+    },
+    {
+      "title": "This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)",
+      "filename": "podcasts/tom-verrilli.md",
+      "word_count": 17740,
+      "date": "2026-08-02",
+      "description": "This CPO regrets that product management exists, covering product design, product strategy and execution, and team leadership.",
+      "guest": "Tom Verrilli",
+      "post_url": "https://www.lennysnewsletter.com/p/this-cpo-regrets-that-product-management"
+    },
+    {
+      "title": "Anthropic’s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn",
+      "filename": "podcasts/dianne-penn.md",
+      "word_count": 15298,
+      "date": "2026-07-26",
+      "description": "Token maxing, the jagged edge, and living in the future, covering AI product work, engineering tradeoffs, and team leadership.",
+      "guest": "Dianne Penn",
+      "post_url": "https://www.lennysnewsletter.com/p/anthropics-first-technical-pm-on"
+    },
+    {
+      "title": "Netflix CPTO on AI and the future of product and tech roles | Elizabeth Stone",
+      "filename": "podcasts/elizabeth-stone-2.md",
+      "word_count": 13081,
+      "date": "2026-07-19",
+      "description": "AI and the future of product and tech roles, covering product design, engineering tradeoffs, and AI product work.",
+      "guest": "Elizabeth Stone",
+      "post_url": "https://www.lennysnewsletter.com/p/netflix-cpto-on-ai-and-the-future"
+    },
+    {
+      "title": "How tech workers actually feel about AI in 2026 | Annual AI sentiment survey (Noam Segal)",
+      "filename": "podcasts/noam-segal.md",
+      "word_count": 15457,
+      "date": "2026-07-12",
+      "description": "How tech workers actually feel about AI in 2026, covering AI product work, career development, and product design.",
+      "guest": "Annual AI sentiment survey",
+      "post_url": "https://www.lennysnewsletter.com/p/how-tech-workers-actually-feel-about"
+    },
+    {
+      "title": "Adam Mosseri: AI is a tailwind for authenticity",
+      "filename": "podcasts/adam-mosseri.md",
+      "word_count": 12640,
+      "date": "2026-07-09",
+      "description": "AI is a tailwind for authenticity, covering product design, AI product work, and team leadership.",
+      "guest": "Adam Mosseri",
+      "post_url": "https://www.lennysnewsletter.com/p/adam-mosseri-ai-is-a-tailwind-for"
+    },
+    {
+      "title": "OpenAI Codex lead on the new shape of product work | Andrew Ambrosino",
+      "filename": "podcasts/andrew-ambrosino.md",
+      "word_count": 13903,
+      "date": "2026-06-28",
+      "description": "The new shape of product work, covering product design, engineering tradeoffs, and AI product work.",
+      "guest": "Andrew Ambrosino",
+      "post_url": "https://www.lennysnewsletter.com/p/openai-codex-lead-on-the-new-shape"
+    },
+    {
+      "title": "Building the most AI-pilled engineering team in the world | Fiona Fung (Manager of the Claude Code and Cowork Teams)",
+      "filename": "podcasts/fiona-fung.md",
+      "word_count": 19294,
+      "date": "2026-06-21",
+      "description": "Building the most AI-pilled engineering team in the world, covering engineering tradeoffs, team leadership, and AI product work.",
+      "guest": "Fiona Fung",
+      "post_url": "https://www.lennysnewsletter.com/p/building-the-most-ai-pilled-engineering"
+    },
+    {
+      "title": "The hidden pattern behind successful products | Mark Pincus (Founder of Zynga)",
+      "filename": "podcasts/mark-pincus.md",
+      "word_count": 16095,
+      "date": "2026-06-14",
+      "description": "The hidden pattern behind successful products, covering product design, consumer products, and startup building.",
+      "guest": "Mark Pincus",
+      "post_url": "https://www.lennysnewsletter.com/p/the-common-pattern-behind-successful"
+    },
+    {
+      "title": "Father of the iPod and iPhone on building taste, judgment, and creativity in the AI era | Tony Fadell",
+      "filename": "podcasts/tony-fadell.md",
+      "word_count": 18180,
+      "date": "2026-06-07",
+      "description": "Building taste, judgment, and creativity in the AI era, covering product design, strategic decision-making, and team leadership.",
+      "guest": "Tony Fadell",
+      "post_url": "https://www.lennysnewsletter.com/p/father-of-the-ipod-and-iphone-on"
+    },
+    {
+      "title": "A rational conversation on where AI is actually going | Benedict Evans",
+      "filename": "podcasts/benedict-evans.md",
+      "word_count": 16316,
+      "date": "2026-05-31",
+      "description": "Where AI is actually going, covering AI product work, product design, and engineering tradeoffs.",
+      "guest": "Benedict Evans",
+      "post_url": "https://www.lennysnewsletter.com/p/a-rational-conversation-on-where"
+    },
+    {
+      "title": "The AI paradox: More automation, more humans, more work | Dan Shipper",
+      "filename": "podcasts/dan-shipper-2.md",
+      "word_count": 17673,
+      "date": "2026-05-24",
+      "description": "More automation, more humans, more work, covering AI product work, engineering tradeoffs, and product design.",
+      "guest": "Dan Shipper",
+      "post_url": "https://www.lennysnewsletter.com/p/the-ai-paradox-dan-shipper"
+    },
+    {
+      "title": "Why we’re at the beginning of the AI hardware boom | Caitlin Kalinowski (ex–OpenAI, Meta, Apple)",
+      "filename": "podcasts/caitlin-kalinowski.md",
+      "word_count": 19355,
+      "date": "2026-05-17",
+      "description": "Why we’re at the beginning of the AI hardware boom, covering product design, consumer products, and engineering tradeoffs.",
+      "guest": "Caitlin Kalinowski",
+      "post_url": "https://www.lennysnewsletter.com/p/why-were-at-the-beginning-of-the"
+    },
+    {
+      "title": "How to build a company that withstands any era | Eric Ries, Lean Startup author",
+      "filename": "podcasts/eric-ries-2.md",
+      "word_count": 20428,
+      "date": "2026-05-10",
+      "description": "Building a company that withstands any era, covering product design, startup building, and AI product work.",
+      "guest": "Eric Ries, Lean Startup author",
+      "post_url": "https://www.lennysnewsletter.com/p/how-to-build-a-company-that-withstands"
+    },
+    {
+      "title": "Snapchat CEO: Why distribution has become the most important moat | Evan Spiegel",
+      "filename": "podcasts/evan-spiegel.md",
+      "word_count": 14177,
+      "date": "2026-04-26",
+      "description": "Why distribution has become the most important moat, covering consumer products, product design, and strategic decision-making.",
+      "guest": "Evan Spiegel"
+    },
+    {
+      "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+      "filename": "podcasts/cat-wu.md",
+      "word_count": 16271,
+      "date": "2026-04-23",
+      "description": "How Anthropic’s product team moves faster than anyone else, covering team leadership, AI product work, and product design.",
+      "guest": "Cat Wu"
+    },
+    {
+      "title": "Why half of product managers are in trouble | Nikhyl Singhal (Meta, Google)",
+      "filename": "podcasts/nikhyl-singhal-2.md",
+      "word_count": 17206,
+      "date": "2026-04-19",
+      "description": "Why half of product managers are in trouble, covering product design, team leadership, and product strategy and execution.",
+      "guest": "Nikhyl Singhal"
+    },
+    {
+      "title": "Hard truths about building in the AI era | Keith Rabois (Khosla Ventures)",
+      "filename": "podcasts/keith-rabois.md",
+      "word_count": 15807,
+      "date": "2026-04-12",
+      "description": "Hard truths about building in the AI era, covering career development, product design, and team leadership.",
+      "guest": "Keith Rabois"
+    },
+    {
+      "title": "Anthropic’s $1B to $19B growth run: how Claude became the fastest-growing AI product in history | Amol Avasare",
+      "filename": "podcasts/amol-avasare.md",
+      "word_count": 22125,
+      "date": "2026-04-05",
+      "description": "How Claude became the fastest-growing AI product in history, covering growth systems, AI product work, and team leadership.",
+      "guest": "Amol Avasare"
+    },
+    {
+      "title": "An AI state of the union: We’ve passed the inflection point, dark factories are coming, and automation timelines | Simon Willison",
+      "filename": "podcasts/simon-willison.md",
+      "word_count": 21276,
+      "date": "2026-04-02",
+      "description": "We’ve passed the inflection point, dark factories are coming, and automation timelines, covering engineering tradeoffs, AI product work, and product design.",
+      "guest": "Simon Willison"
+    },
+    {
+      "title": "From skeptic to true believer: How OpenClaw changed my life | Claire Vo",
+      "filename": "podcasts/claire-vo-openclaw.md",
+      "word_count": 20081,
+      "date": "2026-03-29",
+      "description": "How OpenClaw changed my life, covering AI product work, product design, and engineering tradeoffs.",
+      "guest": "Claire Vo"
+    },
+    {
+      "title": "The art of influence: The single most important skill that AI can’t replace | Jessica Fain (Webflow, ex-Slack)",
+      "filename": "podcasts/jessica-fain.md",
+      "word_count": 17445,
+      "date": "2026-03-22",
+      "description": "The single most important skill that AI can’t replace, covering team leadership, product design, and product strategy and execution.",
+      "guest": "Jessica Fain"
+    },
+    {
+      "title": "Jenny Wen",
+      "filename": "podcasts/jenny-wen.md",
+      "word_count": 15064,
+      "date": "2026-03-01",
+      "description": "It's not just designers who are feeling like, \"Oh yeah, we have to keep up with engineers.\" I think even engineers are like, \"How do we keep up with ourselves?\", covering product design, AI product work, and engineering tradeoffs.",
+      "guest": "Jenny Wen"
+    },
+    {
+      "title": "Jeetu Patel",
+      "filename": "podcasts/jeetu-patel.md",
+      "word_count": 16325,
+      "date": "2026-02-26",
+      "description": "And the reason we pulled this thing together, the goal was, what is happening in the industry and how can we help customers make sure that they can make the most of it, covering AI product work, team leadership, and product design.",
+      "guest": "Jeetu Patel"
+    },
+    {
+      "title": "Boris Cherny",
+      "filename": "podcasts/boris-cherny.md",
+      "word_count": 19629,
+      "date": "2026-02-19",
+      "description": "This is the world now.\" What's the next big shift to how software is written that either your team is already operating in or you think will head towards, covering engineering tradeoffs, product design, and AI product work.",
+      "guest": "Boris Cherny"
+    },
+    {
+      "title": "Sequoia CEO coach: Why it’s never been easier to start a company, and never been harder to scale one | Brian Halligan (co-founder, HubSpot)",
+      "filename": "podcasts/brian-halligan.md",
+      "word_count": 14680,
+      "date": "2026-02-15",
+      "description": "Brian Halligan co-founded HubSpot, ran it as CEO for about 15 years, and now coaches Sequoia’s fastest-growing founders as their in-house CEO coach.",
+      "guest": "Brian Halligan",
+      "youtube_url": "https://www.youtube.com/watch?v=3UyitfSbY6c"
+    },
+    {
+      "title": "Sherwin Wu V2",
+      "filename": "podcasts/sherwin-wu-v2.md",
+      "word_count": 15820,
+      "date": "2026-02-12",
+      "description": "If you talk to a lot of engineers, the thing that annoys them the most is after you've written your beautiful code, how do you get it into production, covering engineering tradeoffs, AI product work, and team leadership.",
+      "guest": "Sherwin Wu V2"
+    },
+    {
+      "title": "The rise of the professional vibe coder (a new AI-era job) | Lazar Jovanovic (Professional Vibe Coder)",
+      "filename": "podcasts/lazar-jovanovic.md",
+      "word_count": 18493,
+      "date": "2026-02-08",
+      "description": "Lazar Jovanovic is a full-time professional vibe coder at Lovable. His job is to build both internal tools and customer-facing products purely using AI, while not having a coding background.",
+      "guest": "Lazar Jovanovic",
+      "youtube_url": "https://www.youtube.com/watch?v=0XNkUdzxiZI"
+    },
+    {
+      "title": "A child psychologist’s guide to working with difficult adults | Dr. Becky Kennedy",
+      "filename": "podcasts/dr-becky-kennedy.md",
+      "word_count": 19670,
+      "date": "2026-02-01",
+      "description": "Working with difficult adults, covering product design, team leadership, and practical product lessons.",
+      "guest": "Dr. Becky Kennedy",
+      "youtube_url": "https://www.youtube.com/watch?v=Auxs8ZsHRI4"
+    },
+    {
+      "title": "Marc Andreessen: The real AI boom hasn’t even started yet",
+      "filename": "podcasts/marc-andreessen.md",
+      "word_count": 23012,
+      "date": "2026-01-29",
+      "description": "Marc Andreessen is a founder, investor, and co-founder of Netscape, as well as co-founder of the venture capital firm Andreessen Horowitz (a16z). In this conversation, we dig into why we’re living through a unique and one of the most incredible times in history, and what comes next.",
+      "guest": "Marc Andreessen",
+      "youtube_url": "https://www.youtube.com/watch?v=87Pm0SGTtN8"
+    },
+    {
+      "title": "5 questions to ask when your product stops growing | Jason Cohen (2x unicorn founder)",
+      "filename": "podcasts/jason-cohen.md",
+      "word_count": 21677,
+      "date": "2026-01-25",
+      "description": "Jason’s five-step framework: logo retention, pricing, NRR, marketing channels, target market.",
+      "guest": "Jason Cohen",
+      "youtube_url": "https://www.youtube.com/watch?v=8xLquwfx6p0"
+    },
+    {
+      "title": "The non-technical PM’s guide to building with Cursor | Zevi Arnovitz (Meta)",
+      "filename": "podcasts/zevi-arnovitz.md",
+      "word_count": 15000,
+      "date": "2026-01-18",
+      "description": "The complete AI workflow that lets non-technical people build real products in Cursor.",
+      "guest": "Zevi Arnovitz",
+      "youtube_url": "https://www.youtube.com/watch?v=1em64iUFt3U"
+    },
+    {
+      "title": "How to show up in any room with a low heart rate: Silicon Valley’s missing etiquette playbook | Sam Lessin",
+      "filename": "podcasts/sam-lessin.md",
+      "word_count": 19398,
+      "date": "2026-01-15",
+      "description": "Silicon Valley’s missing etiquette playbook, covering startup building, product design, and operator lessons.",
+      "guest": "Sam Lessin",
+      "youtube_url": "https://www.youtube.com/watch?v=KtKJ3A6DWTs"
+    },
+    {
+      "title": "The power user’s guide to Codex: parallelizing workflows, planning techniques, advanced context engineering tips, automating code reviews, and more | Alexander Embiricos",
+      "filename": "podcasts/alexander-embiricos.md",
+      "word_count": 17504,
+      "date": "2026-01-12",
+      "description": "How to set up and use Codex in VS Code and terminal environments for both simple and complex coding tasks.",
+      "guest": "Alexander Embiricos",
+      "youtube_url": "https://www.youtube.com/watch?v=xeZDHGjG5zM"
+    },
+    {
+      "title": "Aishwarya Naresh Reganti + Kiriti Badam",
+      "filename": "podcasts/aishwarya-naresh-reganti--kiriti-badam.md",
+      "word_count": 16521,
+      "date": "2026-01-11",
+      "description": "But if you make a bunch of practitioners sit together and ask them, \"Is it important to build an actionable feedback loop for AI products?\" I think all of them will agree, covering AI product work, product design, and team leadership.",
+      "guest": "Aishwarya Naresh Reganti + Kiriti Badam"
+    },
+    {
+      "title": "The high-growth handbook: Molly Graham’s frameworks for leading through chaos, change, and scale",
+      "filename": "podcasts/molly-graham.md",
+      "word_count": 17984,
+      "date": "2026-01-04",
+      "description": "Molly Graham has worked for some of tech’s most effective leaders, including Mark Zuckerberg, Sheryl Sandberg, Chamath Palihapitiya, and Bret Taylor. Today she leads Glue Club, a community for leaders navigating rapid scale, growth, and change.",
+      "guest": "Molly Graham",
+      "youtube_url": "https://www.youtube.com/watch?v=twzLDx9iers"
+    },
+    {
+      "title": "We replaced our sales team with 20 AI agents—here’s what happened | Jason Lemkin (SaaStr)",
+      "filename": "podcasts/jason-m-lemkin.md",
+      "word_count": 26179,
+      "date": "2026-01-01",
+      "description": "We replaced our sales team with 20 AI agents—here’s what happened, covering B2B products, startup building, and team leadership.",
+      "guest": "Jason M Lemkin",
+      "youtube_url": "https://www.youtube.com/watch?v=I-R1bc1rlFs"
+    },
+    {
+      "title": "10 contrarian leadership truths every leader needs to hear | Matt MacInnis (Rippling)",
+      "filename": "podcasts/matt-macinnis.md",
+      "word_count": 18479,
+      "date": "2025-12-28",
+      "description": "Matt MacInnis is the chief product officer and former longtime COO at Rippling, a unified workforce management platform valued at over $16 billion.",
+      "guest": "Matt MacInnis",
+      "youtube_url": "https://www.youtube.com/watch?v=O W76LR77Vw"
+    },
+    {
+      "title": "Elena Verna 4.0",
+      "filename": "podcasts/elena-verna-40.md",
+      "word_count": 17618,
+      "date": "2025-12-18",
+      "description": "Who would've thought that a head of growth, who is traditionally seen as data, metrics, spreadsheets, drive KPIs is like, \"Okay, how do we make this more lovable, covering growth systems, product design, and pricing decisions.",
+      "guest": "Elena Verna 4.0"
+    },
+    {
+      "title": "The 100-person AI lab that became Anthropic and Google's secret weapon | Edwin Chen (Surge AI)",
+      "filename": "podcasts/edwin-chen.md",
+      "word_count": 14500,
+      "date": "2025-12-07",
+      "description": "Edwin Chen is the founder and CEO of Surge AI, the company that teaches AI what’s good and bad, powering frontier labs with elite data, environments, and evaluations. Surge surpassed $1 billion in revenue with under 100 employees last year, completely bootstrapped—the fastest company in history to reach this milestone.",
+      "guest": "Edwin Chen",
+      "youtube_url": "https://www.youtube.com/watch?v=dduQeaqmpnI"
+    },
+    {
+      "title": "Why LinkedIn is turning PMs into AI-powered \"full stack builders” | Tomer Cohen (LinkedIn CPO)",
+      "filename": "podcasts/tomer-cohen.md",
+      "word_count": 13149,
+      "date": "2025-12-04",
+      "description": "Why LinkedIn is turning PMs into AI-powered \"full stack builders”, covering product design, team leadership, and AI product work.",
+      "guest": "Tomer Cohen",
+      "youtube_url": "https://www.youtube.com/watch?v=R-zCfLQD 84"
+    },
+    {
+      "title": "What world-class GTM looks like in 2026 | Jeanne DeWitt Grosser (Vercel, Stripe, Google)",
+      "filename": "podcasts/jeanne-grosser.md",
+      "word_count": 15020,
+      "date": "2025-11-30",
+      "description": "Jeanne DeWitt Grosser built world-class GTM teams at Stripe, Google, and, most recently, Vercel, where she serves as COO and oversees marketing, sales, customer success, revenue operations, and field engineering. She transformed Stripe’s early sales organization from the ground up and advises founders on GTM strategy.",
+      "guest": "Jeanne Grosser",
+      "youtube_url": "https://www.youtube.com/watch?v=RmnWHz8HD74"
+    },
+    {
+      "title": "A guide to difficult conversations, building high-trust teams, and designing a life you love | Rachel Lockett",
+      "filename": "podcasts/rachel-lockett.md",
+      "word_count": 19930,
+      "date": "2025-11-23",
+      "description": "A guide to difficult conversations, building high-trust teams, and designing a life you love, covering team leadership, product design, and consumer products.",
+      "guest": "Rachel Lockett",
+      "youtube_url": "https://www.youtube.com/watch?v=1GDVum5IarI"
+    },
+    {
+      "title": "Slack founder: Mental models for building products people love ft. Stewart Butterfield",
+      "filename": "podcasts/stewart-butterfield.md",
+      "word_count": 16319,
+      "date": "2025-11-20",
+      "description": "Mental models for building products people love ft. Stewart Butterfield, covering product design, B2B products, and consumer products.",
+      "guest": "Stewart Butterfield",
+      "youtube_url": "https://www.youtube.com/watch?v=kLe-zy5r0Mk"
+    },
+    {
+      "title": "The Godmother of AI on jobs, robots & why world models are next | Dr. Fei-Fei Li",
+      "filename": "podcasts/dr-fei-fei-li.md",
+      "word_count": 11651,
+      "date": "2025-11-16",
+      "description": "Jobs, robots & why world models are next, covering AI product work, product design, and consumer products.",
+      "guest": "Dr. Fei Fei Li",
+      "youtube_url": "https://www.youtube.com/watch?v=Ctjiatnd6Xk"
+    },
+    {
+      "title": "“Dumbest idea I’ve heard” to $100M ARR: Inside the rise of Gamma | Grant Lee (CEO)",
+      "filename": "podcasts/grant-lee.md",
+      "word_count": 24649,
+      "date": "2025-11-13",
+      "description": "Inside the rise of Gamma, covering strategic decision-making, product design, and growth systems.",
+      "guest": "Grant Lee",
+      "youtube_url": "https://www.youtube.com/watch?v=3H0ngGU5pbM"
+    },
+    {
+      "title": "\"Sell the alpha, not the feature\": The enterprise sales playbook for $1M to $10M ARR | Jen Abel",
+      "filename": "podcasts/jen-abel.md",
+      "word_count": 14578,
+      "date": "2025-11-09",
+      "description": "Jen Abel is GM of Enterprise at State Affairs and co-founded Jellyfish, a consultancy that helps founders learn zero-to-one enterprise sales. She’s one of the smartest people I’ve ever met on learning enterprise sales, and in this follow-up to our first chat two years ago (covering the zero to $1 million ARR.",
+      "guest": "Jen Abel",
+      "youtube_url": "https://www.youtube.com/watch?v=37fKFWdrMyA"
+    },
+    {
+      "title": "The woman behind Canva shares how she built a $42B company from nothing | Melanie Perkins",
+      "filename": "podcasts/melanie-perkins.md",
+      "word_count": 13718,
+      "date": "2025-11-02",
+      "description": "The woman behind Canva shares how she built a $42B company from nothing, covering product design, strategic decision-making, and startup building.",
+      "guest": "Melanie Perkins",
+      "youtube_url": "https://www.youtube.com/watch?v=-LywX3T5Scc"
+    }
+  ],
+  "newsletters": [
+    {
+      "title": "How to build your PM second brain with ChatGPT",
+      "filename": "newsletters/how-to-build-your-pm-second-brain-with-chatgpt.md",
+      "word_count": 3620,
+      "date": "2025-12-16",
+      "subtitle": "Use AI to amplify your craft, not replace it",
+      "post_url": "https://www.lennysnewsletter.com/p/how-to-build-your-pm-second-brain"
+    },
+    {
+      "title": "Everyone should be using Claude Code more",
+      "filename": "newsletters/everyone-should-be-using-claude-code-more.md",
+      "word_count": 4514,
+      "date": "2025-10-14",
+      "subtitle": "How to get started, and 50 ways non-technical people are using Claude Code in their work and life",
+      "post_url": "https://www.lennysnewsletter.com/p/everyone-should-be-using-claude-code"
+    },
+    {
+      "title": "Essential reading for product builders—part 1",
+      "filename": "newsletters/essential-reading-for-product-builders-part-1.md",
+      "word_count": 2850,
+      "date": "2025-07-15",
+      "subtitle": "7 timeless essays you likely haven’t read but should",
+      "post_url": "https://www.lennysnewsletter.com/p/essential-reading-for-product-builders-part-1"
+    },
+    {
+      "title": "What people are vibe coding (and actually using)",
+      "filename": "newsletters/what-people-are-vibe-coding-and-actually-using.md",
+      "word_count": 4656,
+      "date": "2025-07-08",
+      "subtitle": "50+ useful/fun/clever examples of what non-technical people are building—to inspire your own vibe-coding journey",
+      "post_url": "https://www.lennysnewsletter.com/p/what-people-are-vibe-coding-and-actually-using"
+    },
+    {
+      "title": "An AI glossary",
+      "filename": "newsletters/an-ai-glossary.md",
+      "word_count": 3280,
+      "date": "2025-06-24",
+      "subtitle": "The most common AI terms explained, simply",
+      "post_url": "https://www.lennysnewsletter.com/p/an-ai-glossary"
+    },
+    {
+      "title": "State of the product job market in 2025",
+      "filename": "newsletters/state-of-the-product-job-market-in-2025.md",
+      "word_count": 1376,
+      "date": "2025-05-13",
+      "subtitle": "There’s a lot to be optimistic about",
+      "post_url": "https://www.lennysnewsletter.com/p/state-of-the-product-job-market-in-2025"
+    },
+    {
+      "title": "Beyond vibe checks: A PM’s complete guide to evals",
+      "filename": "newsletters/beyond-vibe-checks-a-pms-complete-guide-to-evals.md",
+      "word_count": 3558,
+      "date": "2025-04-08",
+      "subtitle": "How to master the emerging skill that can make or break an AI product",
+      "post_url": "https://www.lennysnewsletter.com/p/beyond-vibe-checks-a-pms-complete-guide-to-evals"
+    },
+    {
+      "title": "A guide to AI prototyping for product managers",
+      "filename": "newsletters/a-guide-to-ai-prototyping-for-product-managers.md",
+      "word_count": 4449,
+      "date": "2025-01-07",
+      "subtitle": "How to turn your idea into a working prototype in minutes",
+      "post_url": "https://www.lennysnewsletter.com/p/a-guide-to-ai-prototyping-for-product-managers"
+    },
+    {
+      "title": "Product manager is an unfair role. So work unfairly.",
+      "filename": "newsletters/product-manager-is-an-unfair-role-so-work-unfairly.md",
+      "word_count": 4240,
+      "date": "2024-11-12",
+      "subtitle": "How to thrive in “the great flattening” by redefining work norms",
+      "post_url": "https://www.lennysnewsletter.com/p/product-manager-is-an-unfair-role-so-work-unfairly"
+    },
+    {
+      "title": "How Duolingo reignited user growth",
+      "filename": "newsletters/how-duolingo-reignited-user-growth.md",
+      "word_count": 4812,
+      "date": "2023-02-28",
+      "subtitle": "The story behind Duolingo's 350% growth acceleration, leaderboards, streaks, notifications, and innovative growth model",
+      "post_url": "https://www.lennysnewsletter.com/p/how-duolingo-reignited-user-growth"
+    }
+  ]
+}

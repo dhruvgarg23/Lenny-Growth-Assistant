@@ -23,6 +23,9 @@ backend/vector_store/
 backend/data/_temp/
 *.faiss
 *.pkl
+# Keep vendored transcripts (small, public) but ignore large model caches
+backend/data/source/*.bin
+backend/data/source/*.pt
 
 # Secrets
 backend/.env
