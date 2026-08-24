@@ -33,7 +33,7 @@ async def _ollama_chat_stream(messages: List[Dict[str, str]]) -> AsyncGenerator[
         "stream": True,
         "options": {"temperature": 0.2, "num_predict": 2048},
     }
-    async with httpx.AsyncClient(timeout=120) as client:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10)) as client:
         async with client.stream("POST", url, json=payload) as resp:
             resp.raise_for_status()
             async for line in resp.aiter_lines():
@@ -120,6 +120,39 @@ async def _openai_stream(messages: List[Dict[str, str]]) -> AsyncGenerator[str, 
         if delta:
             yield delta
 
+# ── OpenRouter helpers (OpenAI-compatible) ──
+def _openrouter_client():
+    from openai import AsyncOpenAI
+    kwargs = {
+        "api_key": settings.openrouter_api_key,
+        "base_url": settings.openrouter_base_url,
+    }
+    headers = {}
+    if settings.openrouter_referer:
+        headers["HTTP-Referer"] = settings.openrouter_referer
+    if settings.openrouter_app_title:
+        headers["X-Title"] = settings.openrouter_app_title
+    if headers:
+        kwargs["default_headers"] = headers
+    return AsyncOpenAI(**kwargs)
+
+async def _openrouter_chat(messages: List[Dict[str, str]]) -> str:
+    client = _openrouter_client()
+    r = await client.chat.completions.create(
+        model=settings.openrouter_model, messages=messages, temperature=0.2, max_tokens=2048
+    )
+    return r.choices[0].message.content or ""
+
+async def _openrouter_stream(messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
+    client = _openrouter_client()
+    s = await client.chat.completions.create(
+        model=settings.openrouter_model, messages=messages, temperature=0.2, max_tokens=2048, stream=True
+    )
+    async for chunk in s:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
+
 # ── Public facade ──
 async def generate(messages: List[Dict[str, str]]) -> str:
     provider = settings.llm_provider
@@ -133,6 +166,10 @@ async def generate(messages: List[Dict[str, str]]) -> str:
         if not settings.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY not configured")
         return await _openai_chat(messages)
+    elif provider == "openrouter":
+        if not settings.openrouter_api_key:
+            raise RuntimeError("OPENROUTER_API_KEY not configured (selected provider is openrouter)")
+        return await _openrouter_chat(messages)
     else:
         raise ValueError(f"Unknown LLM_PROVIDER: {provider}")
 
@@ -150,6 +187,11 @@ async def stream(messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
         if not settings.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY not configured")
         async for tok in _openai_stream(messages):
+            yield tok
+    elif provider == "openrouter":
+        if not settings.openrouter_api_key:
+            raise RuntimeError("OPENROUTER_API_KEY not configured")
+        async for tok in _openrouter_stream(messages):
             yield tok
     else:
         raise ValueError(f"Unknown LLM_PROVIDER: {provider}")

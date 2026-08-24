@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # ── Provider Toggle ──
-    llm_provider: Literal["ollama", "anthropic", "openai"] = Field(
+    llm_provider: Literal["ollama", "anthropic", "openai", "openrouter"] = Field(
         default="ollama", alias="LLM_PROVIDER"
     )
     ollama_base_url: str = Field(
@@ -41,6 +41,16 @@ class Settings(BaseSettings):
     openai_embed_model: str = Field(
         default="text-embedding-3-small", alias="OPENAI_EMBED_MODEL"
     )
+    # OpenRouter — OpenAI-compatible (use stealth/ox-alpha for testing)
+    openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
+    openrouter_model: str = Field(
+        default="stealth/ox-alpha", alias="OPENROUTER_MODEL"
+    )
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL"
+    )
+    openrouter_referer: str = Field(default="", alias="OPENROUTER_REFERER")
+    openrouter_app_title: str = Field(default="Lenny Growth Assistant", alias="OPENROUTER_APP_TITLE")
 
     # ── Embeddings ──
     embedding_provider: Literal["local", "ollama", "openai"] = Field(
@@ -57,7 +67,7 @@ class Settings(BaseSettings):
     chunk_overlap: int = Field(default=100, alias="CHUNK_OVERLAP")
     retrieval_k: int = Field(default=8, alias="RETRIEVAL_K")
     candidate_k: int = Field(default=30, alias="CANDIDATE_K")
-    rag_min_confidence: float = Field(default=0.10, alias="RAG_MIN_CONFIDENCE")
+    rag_min_confidence: float = Field(default=0.01, alias="RAG_MIN_CONFIDENCE")
     rrf_k: int = 60
 
     # ── DB ──
@@ -95,6 +105,8 @@ class Settings(BaseSettings):
             return bool(self.anthropic_api_key)
         if self.llm_provider == "openai":
             return bool(self.openai_api_key)
+        if self.llm_provider == "openrouter":
+            return bool(self.openrouter_api_key)
         return True  # ollama needs no key
 
     def provider_status(self) -> dict:
@@ -104,6 +116,9 @@ class Settings(BaseSettings):
             "ollama_base_url": self.ollama_base_url,
             "anthropic_configured": bool(self.anthropic_api_key),
             "openai_configured": bool(self.openai_api_key),
+            "openrouter_configured": bool(self.openrouter_api_key),
+            "openrouter_model": self.openrouter_model,
+            "openrouter_base_url": self.openrouter_base_url,
             "embedding_provider": self.embedding_provider,
             "embedding_model": self.embedding_model,
             "vector_dim": self.vector_dim,

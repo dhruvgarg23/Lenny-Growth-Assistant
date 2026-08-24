@@ -53,5 +53,6 @@ async def get_config():
             "ollama": settings.ollama_model,
             "anthropic": settings.anthropic_model,
             "openai": settings.openai_model,
+            "openrouter": settings.openrouter_model,
         },
     }
