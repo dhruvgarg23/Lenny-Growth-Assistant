@@ -20,10 +20,9 @@ structlog>=24.0.0
 python-json-logger>=2.0.0
 slowapi>=0.1.9
 python-dotenv>=1.0.1
-# Pi coding agent wrapper — optional, provides provider abstraction
-# pi-coding-agent-python-sdk>=0.4.0
-# Anthropic / OpenAI — optional cloud providers
+# Anthropic Claude Agent SDK
 anthropic>=0.40.0
+# Cloud LLM / Groq (OpenAI-compatible)
 openai>=1.50.0
 # Sanitization for artifacts
 bleach>=6.1.0

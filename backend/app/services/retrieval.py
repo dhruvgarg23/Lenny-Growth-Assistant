@@ -1,5 +1,11 @@
 """
 Hybrid retrieval — pgvector cosine + Postgres full-text (ts_rank) fused via RRF k=60.
+
+Observability additions:
+  - Structured logs on query embedding start/done with embedding latency.
+  - Metrics on vector vs keyword hits count, top scores, and candidate extraction.
+  - RRF fused ranking scores, top document titles/guests, and total retrieval duration.
+  - Clear diagnosis on vector-only fallback or zero result abstention.
 """
 import logging
 from typing import List, Dict, Any
@@ -7,8 +13,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.config import settings
 from app.services.embeddings import embed_query
+from app.observability.logger import get_logger, Timer
 
-logger = logging.getLogger("lenny.retrieval")
+logger = get_logger("lenny.retrieval")
 
 RRF_K = 60
 
@@ -95,51 +102,108 @@ LIMIT :top_k;
 
 async def hybrid_search(db: AsyncSession, query: str, top_k: int | None = None, candidate_k: int | None = None) -> List[Dict[str, Any]]:
     if not query or not query.strip():
+        logger.debug("retrieval_empty_query", extra={"event": "retrieval_skip", "reason": "empty_query"})
         return []
     top_k = top_k or settings.retrieval_k
     candidate_k = candidate_k or settings.candidate_k
 
+    logger.info(
+        "retrieval_start",
+        extra={
+            "event": "retrieval_start",
+            "query_preview": query[:80],
+            "query_len": len(query),
+            "top_k": top_k,
+            "candidate_k": candidate_k,
+        },
+    )
+
     # Embed query (may be slow — do before DB tx holds connection)
-    try:
-        qvec = await embed_query(query)
-    except Exception as e:
-        logger.exception(f"Embedding failed: {e}")
-        raise RuntimeError(f"Embedding failed: {e}") from e
+    with Timer() as embed_timer:
+        try:
+            qvec = await embed_query(query)
+        except Exception as e:
+            logger.error(
+                f"Embedding failed: {e}",
+                extra={"event": "embedding_error", "error": str(e), "duration_ms": embed_timer.elapsed_ms},
+                exc_info=True,
+            )
+            raise RuntimeError(f"Embedding failed: {e}") from e
+
+    logger.debug(
+        "query_embedded",
+        extra={
+            "event": "embedding_done",
+            "dim": len(qvec),
+            "duration_ms": embed_timer.elapsed_ms,
+        },
+    )
 
     qvec_str = "[" + ",".join(f"{x:.6f}" for x in qvec) + "]"
 
-    try:
-        rows = (await db.execute(HYBRID_SQL, {"qvec": qvec_str, "qtext": query, "cand_k": candidate_k, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
-        # If hybrid returned nothing (e.g., keyword leg empty and vector leg filtered?), fallback to vector-only
-        if not rows:
-            rows = (await db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
-        # Normalize to dicts
-        out: List[Dict[str, Any]] = []
-        for r in rows:
-            out.append({
-                "id": str(r["id"]),
-                "content": r["content"],
-                "document_id": str(r["document_id"]),
-                "title": r["title"],
-                "source_path": r["source_path"],
-                "guest": r["guest"],
-                "vector_score": float(r["vector_score"] or 0),
-                "text_score": float(r["text_score"] or 0),
-                "rrf_score": float(r["rrf_score"] or 0),
-                "confidence": float(r["rrf_score"] or 0),  # alias for abstention gating
-            })
-        # Optional: filter by min confidence — but keep at least top 2 if we have them
-        # We gate at chat layer, not here.
-        return out
-    except Exception as e:
-        logger.exception(f"Hybrid search SQL failed: {e}")
-        # Try vector-only as last resort
+    with Timer() as search_timer:
         try:
-            rows = (await db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
-            return [
-                {"id": str(r["id"]), "content": r["content"], "document_id": str(r["document_id"]), "title": r["title"], "source_path": r["source_path"], "guest": r["guest"], "vector_score": float(r["vector_score"] or 0), "text_score": 0.0, "rrf_score": float(r["rrf_score"] or 0), "confidence": float(r["rrf_score"] or 0)}
-                for r in rows
-            ]
-        except Exception as e2:
-            logger.exception(f"Vector-only fallback also failed: {e2}")
-            raise
+            rows = (await db.execute(HYBRID_SQL, {"qvec": qvec_str, "qtext": query, "cand_k": candidate_k, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
+            used_fallback = False
+            # If hybrid returned nothing, fallback to vector-only
+            if not rows:
+                logger.warning(
+                    "hybrid_search_empty_fallback_to_vector",
+                    extra={"event": "retrieval_fallback", "query_preview": query[:80]},
+                )
+                rows = (await db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
+                used_fallback = True
+
+            out: List[Dict[str, Any]] = []
+            for r in rows:
+                out.append({
+                    "id": str(r["id"]),
+                    "content": r["content"],
+                    "document_id": str(r["document_id"]),
+                    "title": r["title"],
+                    "source_path": r["source_path"],
+                    "guest": r["guest"],
+                    "vector_score": float(r["vector_score"] or 0),
+                    "text_score": float(r["text_score"] or 0),
+                    "rrf_score": float(r["rrf_score"] or 0),
+                    "confidence": float(r["rrf_score"] or 0),
+                })
+
+            top_score = out[0]["rrf_score"] if out else 0.0
+            top_titles = [f"{c['title']} ({c.get('guest') or 'unknown'})" for c in out[:3]]
+            
+            logger.info(
+                f"retrieval_done hits={len(out)} top_score={top_score:.4f}",
+                extra={
+                    "event": "retrieval_done",
+                    "hits_count": len(out),
+                    "top_score": round(top_score, 4),
+                    "top_titles": top_titles,
+                    "used_fallback": used_fallback,
+                    "embed_duration_ms": embed_timer.elapsed_ms,
+                    "db_search_duration_ms": search_timer.elapsed_ms,
+                    "total_duration_ms": embed_timer.elapsed_ms + search_timer.elapsed_ms,
+                },
+            )
+            return out
+        except Exception as e:
+            logger.exception(f"Hybrid search SQL failed: {e}")
+            # Try vector-only as last resort
+            try:
+                rows = (await db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
+                out = [
+                    {"id": str(r["id"]), "content": r["content"], "document_id": str(r["document_id"]), "title": r["title"], "source_path": r["source_path"], "guest": r["guest"], "vector_score": float(r["vector_score"] or 0), "text_score": 0.0, "rrf_score": float(r["rrf_score"] or 0), "confidence": float(r["rrf_score"] or 0)}
+                    for r in rows
+                ]
+                logger.warning(
+                    f"retrieval_recovered_via_vector_only hits={len(out)}",
+                    extra={"event": "retrieval_recovered", "hits_count": len(out)},
+                )
+                return out
+            except Exception as e2:
+                logger.error(
+                    f"Vector-only fallback also failed: {e2}",
+                    extra={"event": "retrieval_fatal_error", "error": str(e2)},
+                    exc_info=True,
+                )
+                raise

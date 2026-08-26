@@ -1,76 +1,172 @@
-# design.md — Lenny Growth Assistant UI/UX
+# Design Specification
 
-## Principles
+## The Lenny Growth Assistant
 
-1. **Grounded trust first:** every answer shows where it came from. Source chips and inline `[source: path]` citations are affordances, not footnotes — they earn click-through and verification.
-2. **Skimmability over prose:** bold subheads, bullets, 1/3/1 rhythm in essays; chat is Markdown with `prose` scale, not long paragraphs.
-3. **No prompt literacy:** modes are explicit pills (Chat / Ship 30 essay / Artifact) rather than hidden keywords; placeholders guide.
-4. **Fail visibly, not silently:** abstain language is consistent (“I don’t have support…”), offline Ollama has reachable badge + banner.
-5. **Split attention, not context switch:** chat left, artifact right (desktop), drawer on mobile — user never loses conversation.
+## 1. Design Principles
 
-## Information architecture
+### Grounding First
+Sources should be visible as part of the answer rather than hidden behind a separate research workflow. Citations and guest attributions appear inline and in interactive chips directly attached to each message.
 
+### Conversation as the Primary Interface
+The user should be able to ask follow-up questions without repeatedly reconstructing context. The chat stream maintains conversational context across multiple turns.
+
+### Output-Oriented
+The interface should support not only answers but reusable outputs such as structured essays and interactive artifacts that can be copied, inspected, or shared immediately.
+
+### Progressive Disclosure
+Advanced functionality (e.g. artifact format selection, model switching, detailed transcript source excerpts) should remain accessible without cluttering or overwhelming the primary chat flow.
+
+### Failure Should Be Actionable
+Errors should tell the user exactly what happened and provide explicit, actionable remediation steps (e.g. CLI commands to start Ollama or configure missing keys) rather than generic alert dialogs.
+
+## 2. Information Architecture
+
+```text
+Application
+│
+├── Session Sidebar (Collapsible)
+│   ├── + New Chat Action
+│   └── Session List (Title, Timestamp, Delete)
+│
+├── Chat Workspace
+│   ├── Header
+│   │   ├── Brand & Description
+│   │   ├── Model / Provider Dropdown Selector
+│   │   └── System Status Indicators (DB, Version)
+│   ├── Conversation Feed
+│   │   ├── Message Bubbles (User / Assistant)
+│   │   ├── Source Citation Chips
+│   │   └── Dynamic Status Indicators (Retrieving / Generating)
+│   └── Composer Bar
+│       ├── Mode Selector (Chat / Ship 30 / Artifact)
+│       ├── Artifact Type Selector (Markdown / HTML)
+│       ├── Multiline Textarea (Auto-expanding)
+│       └── Send / Stop Controls
+│
+└── Artifact Workspace (Split-Pane / Drawer)
+    ├── Artifact Header (Type Badge, Warnings, Close/Toggle)
+    └── Rendered Content Area (Sandboxed Iframe / Markdown Viewer)
 ```
-Header [logo + title + Provider badge (OLLAMA • reachable) | DB | version]
-├─ Sidebar (300px, md+) — New chat | session list (title + count) | Delete
-├─ Chat pane (flex-1) — empty state (3 example Q + tips) → message stream → status pill → sources chips
-├─ Composer — mode pills (chat / ship30 / artifact) + [markdown|html toggle] + textarea (Enter / Shift+Enter) + Send
-└─ Artifact pane (520px, xl+, or drawer on <xl / mobile) — type badge | Copy | Close → Markdown prose or sandboxed iframe → security note
+
+## 3. Primary Screens
+
+### Chat
+- **Purpose:** Conversational exploration, product research, and strategic synthesis.
+- **Contains:** Session navigation, chronological message history, transcript source chips with excerpt previews, expanding composer, and live provider status badges.
+
+### Ship 30
+- **Purpose:** Long-form, highly structured atomic essay writing.
+- **Behavior:** The conversation remains active in the stream while the generated ~1,250-word essay is formatted with bold subheadings, 1/3/1 sentence structures, bulleted frameworks, and a sources footer.
+
+### Artifact
+- **Purpose:** Producing reusable visual or structured outputs (comparison matrices, launch checklists, strategy one-pagers).
+- **Behavior:** The artifact workspace expands beside the conversation on desktop, rendering Markdown tables or interactive HTML/CSS prototypes natively.
+
+## 4. Key Interaction States
+
+### Empty State
+When a new session is started, the chat feed displays a clean greeting card explaining the assistant's capabilities alongside one-click example prompts (e.g., *"How do top PMs improve onboarding activation?"*, *"What are the core loops for B2B PLG?"*).
+
+### Loading State
+When a query is submitted, the UI shows real-time progress indicators (*"Searching Lenny transcripts…"*, *"Drafting answer…"*) reflecting actual pipeline stages without false delays.
+
+### Streaming State
+Tokens render progressively as they arrive from the Server-Sent Events (SSE) stream, providing immediate visual feedback with smooth auto-scrolling.
+
+### Sources Available
+When transcript chunks are retrieved, interactive source chips appear above or below the answer displaying the episode title, guest name, and confidence score. Clicking a chip reveals the exact excerpt.
+
+### No Supporting Evidence (Abstention)
+When a prompt falls outside Lenny's podcast archives or retrieval confidence is low, the assistant displays a polite abstention message and suggests valid domain topics.
+
+### Provider Offline
+If the selected provider (e.g. Ollama daemon) is unreachable, the UI displays an amber warning badge with direct remediation instructions (*"Start Ollama with: `ollama serve && ollama pull llama3.1:8b`"*).
+
+### Artifact Generating
+The artifact workspace enters a subtle loading state while preserving conversational context in the chat pane.
+
+### Artifact Error
+If generated HTML fails validation or contains malicious constructs, the viewer displays a structured error with sanitization warnings while preserving the raw output for inspection.
+
+## 5. Responsive Behavior
+
+### Desktop (≥ 1024px)
+- **Layout:** Two-column split-pane layout.
+- **Dimensions:** Chat workspace takes 60% width; Artifact workspace takes 40% width.
+- **Behavior:** Both areas remain visible simultaneously, allowing the user to refine the prompt while inspecting the rendered artifact.
+
+### Mobile & Tablet (< 1024px)
+- **Layout:** Single-column layout with overlay drawer.
+- **Dimensions:** Chat workspace occupies 100% width; Artifact workspace opens as an animated slide-over drawer or bottom sheet.
+- **Target Viewport:** Fully responsive down to 375px viewport width with zero horizontal scrolling.
+
+## 6. Accessibility
+
+- **Keyboard Navigable:** Full keyboard navigation across all interactive controls (sidebar, mode buttons, model menu, composer).
+- **Visible Focus States:** High-contrast focus rings on all buttons, links, and input fields.
+- **Semantic HTML:** Proper heading hierarchy (`h1` through `h4`), semantic `<button>`, `<nav>`, `<main>`, and `<aside>` elements.
+- **Screen Reader Support:** ARIA attributes (`aria-live="polite"` for streaming tokens, `aria-expanded` for dropdowns).
+- **Color Contrast:** Minimum 4.5:1 contrast ratio for all standard text against light and dark backgrounds.
+- **Keyboard Shortcuts:** `Enter` to send message, `Shift + Enter` to insert a newline.
+
+## 7. Design Decisions
+
+### Why Source Chips?
+Displaying source citations directly alongside generated claims builds immediate trust, allowing PMs to verify specific guest insights without leaving the conversation.
+
+### Why Split Chat/Artifact View?
+A side-by-side view allows users to iteratively prompt the assistant to modify an artifact (e.g. *"add a pricing tier comparison"*) while seeing the updated rendering live.
+
+### Why a Model Selector in the Header?
+Different tasks have varying latency, privacy, and reasoning requirements. Giving evaluators visibility into the active model builds confidence in the system's local vs cloud execution.
+
+### Why Explicit Provider Status?
+Showing whether Ollama is connected or if a cloud API key is missing prevents confusing silent failures and provides immediate troubleshooting feedback.
+
+### Why Sandboxed Artifacts?
+Generated HTML is untrusted content. Rendering it inside an isolated `<iframe>` prevents malicious scripts or stylesheet injections from accessing application cookies, local storage, or the host DOM.
+
+## 8. Interaction Patterns
+
+### Composer Bar
+```text
+[ Mode: Chat ▾ ] [ Format: HTML ▾ ]
+[ Ask a product or growth question...                        ] [ Send ↵ ]
+```
+- Supports `Enter` to submit and `Shift + Enter` for multiline input.
+- Automatically expands vertical height up to 6 lines as text length increases.
+
+### Model Selector Dropdown
+```text
+┌───────────────────────────────────────────────┐
+│ OLLAMA • llama3.1:8b • local                ▾ │
+├───────────────────────────────────────────────┤
+│ 🖥️ OLLAMA (LOCAL)                             │
+│   ● llama3.1:8b                               │
+│ 🧠 ANTHROPIC CLAUDE (CLOUD)                   │
+│   ○ claude-3-5-sonnet-20241022                │
+│   ○ claude-3-5-haiku-20241022                 │
+│ ⚡ GROQ (CLOUD)                               │
+│   ○ llama-3.3-70b-versatile                   │
+│   ○ openai/gpt-oss-120b                       │
+└───────────────────────────────────────────────┘
 ```
 
-**Nav model:** single page app, no router; `activeId` drives `GET /api/sessions/{id}/messages`. Health polls on mount only (not hot loop).
+### Source Citation Chips
+```text
+┌──────────────────────────────────────────────────────────┐
+│ 📄 Brian Halligan — Scaling HubSpot (Score: 0.032)       │
+│ 📄 Elena Verna — B2B Product-Led Growth (Score: 0.029)   │
+└──────────────────────────────────────────────────────────┘
+```
 
-## Key interaction states
+## 9. Visual Hierarchy
 
-| State | UI |
-|-------|----|
-| **Empty / no session** | Centered “No session. Create one” + CTA |
-| **Empty chat** | Card with 3 example prompts (click to fill), tip chips for Ship30/artifact |
-| **Streaming** | Assistant bubble grows with `ReactMarkdown`, sources appear above tokens after `sources` event; status pulsing dot |
-| **Abstain** | Assistant text “I don’t have support…”, sources empty, suggestions |
-| **Ship30 essay** | Same bubble but longer; content itself has H1 + `###` subheads; persisted as message |
-| **Artifact** | `ArtifactViewer` replaces placeholder; `artifact.type` badge; Copy writes raw; iframe has `sandbox="allow-scripts allow-popups"` and note about isolation |
-| **Error** | Streaming text appends `> ⚠️ {detail}`; e.g., Ollama not reachable remediation |
-| **Offline DB** | Health header shows “DB degraded”; sessions list may be empty |
-| **Deleting** | Native `confirm()` then optimistic remove |
+Priority ordering from highest to lowest:
+1. **Active Conversation Stream:** The primary reading area where answers and citations unfold.
+2. **Composer Input:** The primary action area where the user inputs questions and sets modes.
+3. **Rendered Artifact Canvas:** The visual output pane displaying rendered documents or prototypes.
+4. **Source Attribution Details:** Supplementary verification data.
+5. **System Controls:** Model switching, session management, and status indicators.
 
-## Responsive behavior
-
-- **≥1280px (xl):** 3 columns — sidebar 300 + chat flex + artifact 520.
-- **768–1279px:** sidebar visible, artifact **hidden** until `artifact` arrives → still hidden xl drawer hint; artifact toggles as overlay? Current: xl-only pane, mobile drawer covers all when open — keeps chat scrollable underneath.
-- **<768px:** sidebar collapses to `hidden md:flex` (future: hamburger drawer — intentionally excluded per scope).
-- **Composer:** pills wrap on narrow, textarea grows to 32 lines, Send is thumb-reachable.
-- **Typography:** `prose-sm` in bubbles, `text-sm` elsewhere, `antialiased`, `scrollbar-thin`.
-
-**Test matrix:** 1440, 1024, 768, 375 widths; Chrome, Safari; keyboard only (Tab → composer → Send), screen reader live region on `status`.
-
-## Accessibility
-
-- Semantic `header`, `main`, `button` with `disabled` state, `textarea` with placeholder, focus ring (`focus:ring-1` zinc-900).
-- Message list is `div` with `role=log` potential (future): currently `scrollIntoView` for new tokens; ARIA `live="polite"` on status to announce “Searching…”.
-- Color contrast: zinc-900 on white, emerald/amber badges meet WCAG AA; no color-only meaning (badge also has text “reachable”).
-- Artifact iframe has `title="artifact"`; links get `rel="noopener noreferrer"`; Copy is button, not icon-only.
-- No keyboard traps; `Enter` sends, `Shift+Enter` newline; `Esc` not yet closing drawer (future).
-
-## Design decisions & trade-offs
-
-| Decision | Alternative | Why |
-|----------|-------------|-----|
-| Mode pills instead of slash commands | `/ship30` hidden syntax | Discoverability; evaluators see features without docs |
-| `DOMPurify` + `bleach` double sanitize | Sanitizer only server or client | Defense in depth; either side degrade-safe |
-| `react-markdown + remark-gfm` | `dangerouslySetInnerHTML` | No script injection, tables/lists native |
-| `sandbox="allow-scripts"` w/o `allow-same-origin` | `allow-same-origin` for nicer styling | Security: isolates null origin, cookies unreachable (see architecture.md) |
-| Local MiniLM vs OpenAI embeddings | OpenAI 1536 | Zero key, fast ingest, private |
-| `lucide-react` not yet used heavily | Heavier icon set | Keep bundle ~398KB → 125KB gzip |
-
-## Component inventory
-
-- `SessionSidebar.jsx:20` — list + new/delete
-- `ChatPane.jsx:18` — empty state, `SourceChips`, `ReactMarkdown`, streaming
-- `ArtifactViewer.jsx:12` — `DOMPurify.sanitize`, `srcDoc` iframe vs `prose`, Copy/Close, security footer
-- `App.jsx:60` — state: `health/config/sessions/activeId/messages/input/mode/artifactType/streaming*`, `streamChat` controller, `fetchHealth` on mount
-
-## Future polish (out of scope)
-
-- Hamburger drawer for mobile sidebar, `Esc` to close artifact, theme toggle, session rename inline, message copy, per-message feedback thumbs, token cost badge, `prefers-reduced-motion`, `cmd+K` command palette, `aria-live` for tokens.
-
+The interface prioritizes reading clarity and content consumption over decorative complexity.

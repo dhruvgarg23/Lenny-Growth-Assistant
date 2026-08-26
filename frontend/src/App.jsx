@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { fetchHealth, fetchConfig, listSessions, createSession, deleteSession, listMessages, streamChat } from './lib/api'
+import { fetchHealth, fetchConfig, listSessions, createSession, deleteSession, listMessages, streamChat, switchModel } from './lib/api'
 import SessionSidebar from './components/SessionSidebar'
 import ChatPane from './components/ChatPane'
 import ArtifactViewer from './components/ArtifactViewer'
@@ -18,7 +18,10 @@ export default function App() {
   const [status, setStatus] = useState('')
   const [artifact, setArtifact] = useState(null)
   const [showArtifact, setShowArtifact] = useState(true)
+  const [modelMenuOpen, setModelMenuOpen] = useState(false)
+  const [switching, setSwitching] = useState(false)
   const streamRef = useRef(null)
+  const modelMenuRef = useRef(null)
 
   useEffect(() => {
     fetchHealth().then(setHealth).catch(() => setHealth({ status: 'unknown' }))
@@ -93,7 +96,8 @@ export default function App() {
       },
       onError: (d) => {
         setStatus('')
-        setStreamingText(prev => prev + `\n\n> ⚠️ ${d.detail || 'Error'}`)
+        const reqStr = d.request_id && d.request_id !== '-' ? `\n> _Request ID: \`${d.request_id}\`_` : ''
+        setStreamingText(prev => prev + `\n\n> ⚠️ **Error:** ${d.detail || 'Failed to generate response'}${reqStr}`)
       },
     })
     streamRef.current = ctrl
@@ -103,9 +107,49 @@ export default function App() {
   const streamingTextRef = useRef('')
   useEffect(() => { streamingTextRef.current = streamingText }, [streamingText])
 
-  const providerLabel = config?.provider?.selected || health?.provider?.selected || 'ollama'
+  // Close model menu on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (modelMenuRef.current && !modelMenuRef.current.contains(e.target)) setModelMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  async function handleModelSwitch(provider, model) {
+    setSwitching(true)
+    try {
+      await switchModel(provider, model)
+      // Refresh config to get updated runtime state
+      const [h, c] = await Promise.all([fetchHealth(), fetchConfig()])
+      setHealth(h)
+      setConfig(c)
+    } catch (e) {
+      alert(`Failed to switch: ${e.message}`)
+    } finally {
+      setSwitching(false)
+      setModelMenuOpen(false)
+    }
+  }
+
+  const runtimeState = config?.runtime || health?.runtime
+  const providerLabel = runtimeState?.provider || config?.provider?.selected || 'ollama'
+  const selectedModel = runtimeState?.model || config?.provider?.selected_model || ''
+  const groqConfigured = runtimeState?.groq_configured ?? config?.provider?.groq_configured
+  const anthropicConfigured = runtimeState?.anthropic_configured ?? config?.provider?.anthropic_configured
   const ollamaOk = health?.ollama_reachable
   const dbOk = health?.db_ok
+  const isAnthropic = providerLabel === 'anthropic'
+  const isGroq = providerLabel === 'groq'
+  const isCloud = isAnthropic || isGroq
+  const cloudConfigured = isAnthropic ? anthropicConfigured : (isGroq ? groqConfigured : false)
+  const badgeColor = isCloud ? (cloudConfigured ? 'emerald' : 'amber') : (ollamaOk ? 'emerald' : 'amber')
+  const statusText = isAnthropic
+    ? (anthropicConfigured ? 'cloud' : health ? 'key missing' : 'checking…')
+    : isGroq
+    ? (groqConfigured ? 'cloud' : health ? 'key missing' : 'checking…')
+    : (ollamaOk ? 'local' : health ? 'not reachable' : 'checking…')
+  const allowedModels = runtimeState?.allowed_models || config?.allowed_models || {}
 
   return (
     <div className="flex h-screen w-screen flex-col bg-zinc-50">
@@ -118,11 +162,45 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <span className={`rounded-full border px-2.5 py-1 font-medium ${ollamaOk ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-            {providerLabel.toUpperCase()} • {ollamaOk ? 'reachable' : health ? 'Ollama not reachable' : 'checking…'}
-          </span>
+          <div className="relative" ref={modelMenuRef}>
+            <button
+              onClick={() => setModelMenuOpen(v => !v)}
+              disabled={switching}
+              title="Click to switch model"
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium cursor-pointer transition-colors ${badgeColor === 'emerald' ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
+            >
+              {switching ? '⟳ switching…' : `${providerLabel.toUpperCase()} • ${selectedModel || '—'} • ${statusText}`}
+              <svg className="h-3 w-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            {modelMenuOpen && (
+              <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
+                {Object.entries(allowedModels).map(([prov, models]) => (
+                  <div key={prov}>
+                    <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                      {prov === 'anthropic' ? '🧠 Anthropic Claude (Cloud)' : prov === 'groq' ? '⚡ Groq (Cloud)' : '🖥️ Ollama (Local)'}
+                    </div>
+                    {(models || []).map(m => {
+                      const isActive = prov === providerLabel && m === selectedModel
+                      return (
+                        <button
+                          key={`${prov}-${m}`}
+                          onClick={() => handleModelSwitch(prov, m)}
+                          className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-zinc-50 ${
+                            isActive ? 'bg-zinc-100 font-semibold text-zinc-900' : 'text-zinc-700'
+                          }`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-transparent'}`} />
+                          {m}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <span className={`hidden rounded-full border px-2.5 py-1 text-zinc-600 sm:inline ${dbOk ? 'border-zinc-200 bg-white' : 'border-red-200 bg-red-50 text-red-700'}`}>{dbOk ? 'DB connected' : 'DB degraded'}</span>
-          <span className="hidden text-zinc-400 sm:inline">v{health?.version || config?.provider?.vector_dim || '1.0.0'}</span>
+          <span className="hidden text-zinc-400 sm:inline">v{health?.version || '1.0.0'}</span>
         </div>
       </header>
 

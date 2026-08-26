@@ -59,6 +59,13 @@ export default function ChatPane({ messages, streamingText, streamingSources, st
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.content}</p>
                 )}
                 {m.sources?.length > 0 && <SourceChips sources={m.sources} />}
+                {m.meta && (m.meta.latency_ms || m.meta.model) && (
+                  <div className="mt-2 flex items-center gap-2 text-[10px] text-zinc-400">
+                    {m.meta.model && <span>{m.meta.provider?.toUpperCase()} · {m.meta.model}</span>}
+                    {m.meta.latency_ms && <span>· {m.meta.latency_ms}ms</span>}
+                    {m.meta.request_id && m.meta.request_id !== '-' && <span title="Request ID">· id:{m.meta.request_id}</span>}
+                  </div>
+                )}
                 {m.artifact && <div className="mt-2 text-xs text-zinc-500">↗ Artifact: {m.artifact.type}</div>}
               </div>
             </div>

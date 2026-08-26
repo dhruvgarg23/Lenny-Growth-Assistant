@@ -80,4 +80,17 @@ export function streamChat(sessionId, payload, handlers) {
   return { abort: () => ctrl.abort() }
 }
 
+export async function switchModel(provider, model) {
+  const r = await fetch(`${API}/config/model`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, model }),
+  })
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }))
+    throw new Error(err.detail || 'Failed to switch model')
+  }
+  return r.json()
+}
+
 export { API }
