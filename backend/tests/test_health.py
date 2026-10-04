@@ -27,13 +27,19 @@ def test_config_endpoint():
     assert "runtime" in j
     assert j["retrieval"]["retrieval_k"] == 8
 
-def test_switch_model_endpoint():
-    # Switch to groq / qwen
-    r = client.put("/api/config/model", json={"provider": "groq", "model": "qwen/qwen3.6-27b"})
+def test_switch_model_endpoint(monkeypatch):
+    # Hermetic: declare the allowlist + key the switch needs instead of
+    # depending on the developer's local .env.
+    from app.config import runtime as rt
+    monkeypatch.setattr(rt._settings, "groq_models",
+                        "llama-3.3-70b-versatile,qwen/qwen3-32b")
+    monkeypatch.setattr(rt._settings, "groq_api_key", "test-key")
+    # Switch to groq / qwen (reasoning model served via Groq)
+    r = client.put("/api/config/model", json={"provider": "groq", "model": "qwen/qwen3-32b"})
     assert r.status_code == 200
     j = r.json()
     assert j["provider"] == "groq"
-    assert j["model"] == "qwen/qwen3.6-27b"
+    assert j["model"] == "qwen/qwen3-32b"
 
     # Switch to ollama
     r = client.put("/api/config/model", json={"provider": "ollama", "model": "llama3.1:8b"})

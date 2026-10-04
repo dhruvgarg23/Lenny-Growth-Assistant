@@ -54,7 +54,7 @@ class Settings(BaseSettings):
 
     # Groq — OpenAI-compatible (https://api.groq.com/openai/v1)
     # Get key: https://console.groq.com/keys → GROQ_API_KEY
-    # Models: llama-3.3-70b-versatile (default, 280t/s 131k), openai/gpt-oss-120b (500t/s reasoning), llama-3.1-8b-instant (560t/s)
+    # Models: llama-3.3-70b-versatile (default, 280t/s 131k), openai/gpt-oss-120b (500t/s reasoning), llama-3.1-8b-instant (560t/s), qwen/qwen3-32b (reasoning, hidden)
     groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
     groq_model: str = Field(
         default="llama-3.3-70b-versatile", alias="GROQ_MODEL"
@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     )
     # Allowlist for UI visibility (env-only toggle, restart required per model switch)
     groq_models: str = Field(
-        default="llama-3.3-70b-versatile,openai/gpt-oss-120b,llama-3.1-8b-instant",
+        default="llama-3.3-70b-versatile,openai/gpt-oss-120b,llama-3.1-8b-instant,qwen/qwen3-32b",
         alias="GROQ_MODELS",
     )
     ollama_models: str = Field(default="llama3.1:8b", alias="OLLAMA_MODELS")
