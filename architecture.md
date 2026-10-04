@@ -42,8 +42,8 @@ PostgreSQL 16 + pgvector       Pluggable Model Providers
 ### Retrieval Service (`backend/app/services/retrieval.py`)
 - **Responsibilities:** Dense vector cosine search (`pgvector`), lexical full-text search (`tsvector`), Reciprocal Rank Fusion (RRF) score merging, and confidence scoring.
 
-### LLM Service (`backend/app/services/llm.py`)
-- **Responsibilities:** Unified streaming and non-streaming interface across local Ollama, Anthropic Claude, and Groq; `<think>` token filtering; upstream error categorisation.
+### LLM Facade (`backend/app/services/llm/`)
+- **Responsibilities:** Stream-only facade over per-provider adapters (`ollama.py`, `groq.py`, `anthropic.py`); shared telemetry (TTFT, chunk counts), `<think>` token filtering, upstream error categorisation.
 
 ### Artifact Service (`backend/app/services/artifacts.py`)
 - **Responsibilities:** Safe extraction of code blocks, HTML sanitization via Bleach and CSSSanitizer (tinycss2), attribute allowlisting, and security warning reporting.
@@ -211,7 +211,7 @@ The router prevents every request from being handled as a generic chat completio
                                  │
                                  ▼
                      LLM Provider Abstraction
-                     (`backend/app/services/llm.py`)
+                      (`backend/app/services/llm/facade.py`)
                                  │
          ┌───────────────────────┼───────────────────────┐
          ▼                       ▼                       ▼

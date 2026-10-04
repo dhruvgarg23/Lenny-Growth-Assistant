@@ -5,7 +5,7 @@ from app.main import app
 from app.observability.logger import (
     bind, unbind, get_context, Timer, _JsonFormatter, _ContextFilter
 )
-from app.services.llm import _categorise_error
+from app.services.llm.facade import _categorise_error
 
 client = TestClient(app)
 

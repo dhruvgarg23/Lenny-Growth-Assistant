@@ -18,14 +18,14 @@ def test_detect_artifact_type():
 
 
 def test_anthropic_payload_preparation():
-    from app.services.llm import _prepare_anthropic_payload
+    from app.services.llm.anthropic import prepare_anthropic_payload
     messages = [
         {"role": "system", "content": "You are Lenny Assistant."},
         {"role": "user", "content": "Hello"},
         {"role": "user", "content": "How to scale?"},
         {"role": "assistant", "content": "Focus on PMF."},
     ]
-    system_prompt, convo = _prepare_anthropic_payload(messages)
+    system_prompt, convo = prepare_anthropic_payload(messages)
     assert system_prompt == "You are Lenny Assistant."
     assert len(convo) == 2  # merged adjacent user messages
     assert convo[0]["role"] == "user"

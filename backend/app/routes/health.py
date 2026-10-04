@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.config import settings, runtime
 from app.services.database import check_db_health
-from app.services.llm import ollama_health
+from app.services.llm.ollama import ollama_health
 from app.observability.logger import get_logger, Timer
 
 router = APIRouter()
@@ -15,7 +15,7 @@ async def health():
 
     ollama_ok = False
     if runtime.provider == "ollama":
-        ollama_ok = await ollama_health()
+        ollama_ok = await ollama_health(runtime.ollama_base_url)
 
     return {
         "status": "healthy" if db_ok else "degraded",
@@ -37,7 +37,7 @@ async def diagnostics():
         ollama_stat = {"configured": bool(runtime.ollama_base_url)}
         if runtime.provider == "ollama":
             with Timer() as ot:
-                reachable = await ollama_health()
+                reachable = await ollama_health(runtime.ollama_base_url)
             ollama_stat["reachable"] = reachable
             ollama_stat["latency_ms"] = ot.elapsed_ms
 
