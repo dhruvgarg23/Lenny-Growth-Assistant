@@ -1,29 +1,12 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import DOMPurify from 'dompurify'
 
 export default function ArtifactViewer({ artifact, onClose }) {
-  const sanitized = useMemo(() => {
-    if (!artifact) return null
-    if (artifact.type === 'html') {
-      // Client-side DOMPurify defense-in-depth (backend already sanitized)
-      const cfg = {
-        ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','br','hr','ul','ol','li','strong','em','b','i','u','a','blockquote','code','pre','span','div','section','article','header','footer','main','table','thead','tbody','tr','th','td','style'],
-        ALLOWED_ATTR: ['href','title','target','rel','class','colspan','rowspan'],
-        ALLOW_DATA_ATTR: false,
-        FORBID_TAGS: ['script','iframe','object','embed','form','meta','link','base'],
-        FORBID_ATTR: ['onerror','onload','onclick','onmouseover','style'],
-      }
-      // Allow style blocks but strip dangerous CSS via hook
-      let html = artifact.content || ''
-      // DOMPurify will keep <style> if we allow it, then we extra-strip url/@import via regex
-      html = html.replace(/@import/gi, '').replace(/url\(/gi, '(blocked-url')
-      const clean = DOMPurify.sanitize(html, cfg)
-      return clean
-    }
-    return artifact.content
-  }, [artifact])
+  // No client-side re-scrub: the backend seam (prepare_artifact) guarantees
+  // sanitized HTML. This viewer owns containment only — a sandboxed iframe
+  // with no allow-same-origin, so content can't reach cookies, storage, or DOM.
+  const content = artifact?.content || ''
 
   if (!artifact) {
     return (
@@ -68,14 +51,14 @@ export default function ArtifactViewer({ artifact, onClose }) {
               title="artifact"
               sandbox="allow-scripts allow-popups"
               referrerPolicy="no-referrer"
-              srcDoc={sanitized}
+              srcDoc={content}
               className="h-[70vh] min-h-[520px] w-full rounded-xl"
             />
           )}
         </div>
         {/* Security note */}
         <p className="mx-auto mt-3 max-w-3xl text-[11px] leading-relaxed text-zinc-400">
-          Rendered as untrusted content: scripts run without <code>allow-same-origin</code>, external resources and forms are blocked, HTML is sanitized with DOMPurify + server-side bleach. CSP and sandbox contain malicious output.
+          Rendered as untrusted content: scripts run without <code>allow-same-origin</code>, external resources and forms are blocked, HTML is sanitized server-side. Sandbox containment isolates it from the app.
         </p>
       </div>
     </div>

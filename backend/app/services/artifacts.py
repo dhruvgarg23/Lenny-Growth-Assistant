@@ -9,6 +9,7 @@ Observability additions:
   - Warnings and blocked pattern logs for diagnosis of rendering failures.
 """
 import re
+from dataclasses import dataclass, field
 from typing import Literal
 
 from app.observability.logger import get_logger, Timer
@@ -123,25 +124,47 @@ def sanitize_html(raw: str) -> tuple[str, list[str]]:
             },
         )
         return cleaned, warnings
+@dataclass(frozen=True)
+class PreparedArtifact:
+    """Output of the artifact seam: safe to store and render, plus warnings."""
 
-def sanitize_markdown(md: str) -> str:
-    return md
+    type: Literal["markdown", "html"]
+    content: str
+    warnings: list = field(default_factory=list)
+    raw: str | None = None
 
-def validate_artifact(artifact_type: Literal["markdown", "html"], content: str) -> tuple[bool, list[str]]:
-    warnings: list[str] = []
+
+MAX_ARTIFACT_CHARS = 200_000
+
+_HTML_FENCE_RE = re.compile(r"```html(.*?)```", flags=re.S | re.I)
+_MD_FENCE_RE = re.compile(r"```markdown(.*?)```", flags=re.S | re.I)
+
+
+def prepare_artifact(text: str, artifact_type: Literal["markdown", "html"]) -> tuple[str, PreparedArtifact]:
+    """Single producing path: extract fences first, sanitize exactly once,
+    enforce the size cap. Returns (stored_content, artifact)."""
     if artifact_type == "html":
-        _, w = sanitize_html(content)
-        warnings.extend(w)
-    # Enforce size limits
-    if len(content) > 200_000:
-        msg = "Artifact too large (>200k chars), truncate."
-        warnings.append(msg)
-        logger.warning("artifact_validation_failed_size", extra={"event": "artifact_validation_error", "reason": msg, "size": len(content)})
-        return False, warnings
-    # Hard block if contains script even after sanitize attempt
-    if re.search(r"<script|javascript:", content, flags=re.I):
-        msg = "Contains disallowed script content."
-        warnings.append(msg)
-        logger.warning("artifact_validation_failed_script", extra={"event": "artifact_validation_error", "reason": msg})
-        return False, warnings
-    return True, warnings
+        m = _HTML_FENCE_RE.search(text)
+        raw = m.group(1) if m else text
+        content, warnings = sanitize_html(raw)
+        # Post-sanitize belt-and-braces: sanitize_html must already have removed these.
+        if re.search(r"<script|javascript:", content, flags=re.I):
+            warnings.append("Contains disallowed script content.")
+            logger.warning("artifact_post_sanitize_script_found", extra={"event": "artifact_validation_error"})
+    else:
+        m = _MD_FENCE_RE.search(text)
+        raw = m.group(1).strip() if m else text
+        content, warnings = raw, []
+
+    if len(content) > MAX_ARTIFACT_CHARS:
+        content = content[:MAX_ARTIFACT_CHARS]
+        warnings.append(f"Artifact truncated to {MAX_ARTIFACT_CHARS} chars.")
+        logger.warning("artifact_truncated_size", extra={"event": "artifact_validation_error", "size": len(text)})
+
+    artifact = PreparedArtifact(
+        type=artifact_type,
+        content=content,
+        warnings=warnings,
+        raw=raw[:MAX_ARTIFACT_CHARS] if artifact_type == "html" else None,
+    )
+    return content, artifact

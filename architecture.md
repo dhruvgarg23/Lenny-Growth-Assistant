@@ -45,7 +45,7 @@ PostgreSQL 16 + pgvector       Pluggable Model Providers
 - **Responsibilities:** Stream-only facade over per-provider adapters (`ollama.py`, `groq.py`, `anthropic.py`); shared telemetry (TTFT, chunk counts), `<think>` token filtering, upstream error categorisation.
 
 ### Artifact Service (`backend/app/services/artifacts.py`)
-- **Responsibilities:** Safe extraction of code blocks, HTML sanitization via Bleach and CSSSanitizer (tinycss2), attribute allowlisting, and security warning reporting.
+- **Responsibilities:** Single producing seam (`prepare_artifact`): fence extraction, one sanitization pass via Bleach and CSSSanitizer (tinycss2), size cap, warnings. The viewer renders backend output directly inside a sandboxed iframe (no `allow-same-origin`); no client-side re-scrub.
 
 ## 3. Database Schema
 

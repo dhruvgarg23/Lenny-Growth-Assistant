@@ -13,9 +13,8 @@ Canon (settled in architecture review):
 - one abstention wording
 - full meta on every persisted assistant message
 """
-import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import AsyncGenerator, Awaitable, Callable, Literal, Optional, Protocol, Sequence
 
 from sqlalchemy import select
@@ -29,7 +28,7 @@ from app.services.prompts import (
     build_grounded_messages,
     build_ship30_messages,
 )
-from app.services.artifacts import sanitize_html
+from app.services.artifacts import PreparedArtifact, prepare_artifact
 from app.observability.logger import get_logger
 
 logger = get_logger("lenny.conversation")
@@ -41,9 +40,6 @@ ABSTAIN_TEXT = (
     "Try asking about product strategy, onboarding, PLG, pricing, or retention — "
     "e.g., 'What does Lenny's Podcast say about onboarding activation?'"
 )
-
-_HTML_FENCE_RE = re.compile(r"```html(.*?)```", flags=re.S | re.I)
-_MD_FENCE_RE = re.compile(r"```markdown(.*?)```", flags=re.S | re.I)
 
 
 # ── Interface types ───────────────────────────────────────────────────────────
@@ -68,18 +64,10 @@ class SourceRef:
 
 
 @dataclass(frozen=True)
-class BuiltArtifact:
-    type: Literal["markdown", "html"]
-    content: str
-    warnings: list = field(default_factory=list)
-    raw: Optional[str] = None
-
-
-@dataclass(frozen=True)
 class GroundedResult:
     content: str
     sources: tuple = ()
-    artifact: Optional[BuiltArtifact] = None
+    artifact: Optional[PreparedArtifact] = None
     abstained: bool = False
     confidence: float = 0.0
     latency_ms: int = 0
@@ -112,7 +100,7 @@ class Token:
 
 @dataclass(frozen=True)
 class ArtifactReady:
-    artifact: BuiltArtifact
+    artifact: PreparedArtifact
 
 
 @dataclass(frozen=True)
@@ -200,19 +188,6 @@ class _ProviderUnavailable(RuntimeError):
 
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
-def _build_artifact(text: str, artifact_type: str) -> tuple[str, BuiltArtifact]:
-    """Extract fences first, then sanitize exactly once. Returns (stored_content, artifact)."""
-    if artifact_type == "html":
-        m = _HTML_FENCE_RE.search(text)
-        raw = m.group(1) if m else text
-        sanitized, warnings = sanitize_html(raw)
-        artifact = BuiltArtifact(type="html", content=sanitized, raw=raw[:200000], warnings=warnings)
-        return sanitized, artifact
-    m = _MD_FENCE_RE.search(text)
-    raw = m.group(1).strip() if m else text
-    return raw, BuiltArtifact(type="markdown", content=raw, warnings=[])
-
-
 def _sources(contexts: Sequence[Passage]) -> tuple[SourceRef, ...]:
     return tuple(
         SourceRef(
@@ -295,7 +270,7 @@ async def answer(
 
         artifact = None
         if mode == "artifact":
-            full, artifact = _build_artifact(full, artifact_type or "html")
+            full, artifact = prepare_artifact(full, artifact_type or "html")
             yield ArtifactReady(artifact=artifact)
 
         meta = {
