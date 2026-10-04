@@ -39,7 +39,7 @@ PostgreSQL 16 + pgvector       Pluggable Model Providers
 - **Responsibilities:** Mode-specific prompt assembly (grounded chat, Ship 30 essay, artifact) and the 5-pillar Ship 30 for 30 playbook. Multi-turn tool calling does not exist yet — a future agent loop belongs behind the conversation module's seam as an adapter, not as a parallel pipeline.
 
 ### Retrieval Service (`backend/app/services/retrieval.py`)
-- **Responsibilities:** Dense vector cosine search (`pgvector`), lexical full-text search (`tsvector`), Reciprocal Rank Fusion (RRF) score merging, and confidence scoring.
+- **Responsibilities:** `HybridRetrieval` — dense vector cosine search (`pgvector`), lexical full-text search (`tsvector`), Reciprocal Rank Fusion (RRF) score merging — constructed with injected session, embed function, and result sizes; returns typed `Passage` tuples. Serve-time and ingest-time embedding share one path (`app/services/embeddings.py`).
 
 ### LLM Facade (`backend/app/services/llm/`)
 - **Responsibilities:** Stream-only facade over per-provider adapters (`ollama.py`, `groq.py`, `anthropic.py`); shared telemetry (TTFT, chunk counts), `<think>` token filtering, upstream error categorisation.

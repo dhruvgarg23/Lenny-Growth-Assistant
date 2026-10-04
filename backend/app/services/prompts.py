@@ -1,6 +1,8 @@
 """
 Grounded prompt templates + Ship30 gating.
 """
+from typing import Sequence
+from app.services.retrieval import Passage
 
 GROUNDED_SYSTEM = """You are The Lenny Growth Assistant — a precise product & growth advisor grounded strictly in Lenny's Podcast transcripts.
 
@@ -13,14 +15,14 @@ Rules (non-negotiable):
 - If user asks for Ship30 essay or artifact, do NOT hallucinate — use retrieved context; you will be called again with formatting instructions.
 """
 
-def build_grounded_messages(query: str, history: list[dict], contexts: list[dict]) -> list[dict]:
+def build_grounded_messages(query: str, history: list[dict], contexts: Sequence[Passage]) -> list[dict]:
     # Build CONTEXT block
     ctx_lines = []
     for i, c in enumerate(contexts):
-        title = c.get("title") or "Untitled"
-        guest = c.get("guest") or "unknown"
-        path = c.get("source_path") or c.get("id")
-        excerpt = (c.get("content") or "")[:1200]
+        title = c.title or "Untitled"
+        guest = c.guest or "unknown"
+        path = c.source_path or c.id
+        excerpt = (c.content or "")[:1200]
         ctx_lines.append(f"[{i+1}] {title} — guest: {guest} — source: {path}\n{excerpt}\n")
     context_block = "\n---\n".join(ctx_lines) if ctx_lines else "(no context retrieved)"
 
@@ -54,13 +56,13 @@ Output: Markdown. Keep source citations inline and add a Sources footer with the
 Approx length: 1150-1350 words. If context is thin, acknowledge and use what exists rather than hallucinating.
 """
 
-def build_ship30_messages(query: str, history: list[dict], contexts: list[dict]) -> list[dict]:
+def build_ship30_messages(query: str, history: list[dict], contexts: Sequence[Passage]) -> list[dict]:
     ctx_lines = []
     for i, c in enumerate(contexts):
-        title = c.get("title") or "Untitled"
-        guest = c.get("guest") or "unknown"
-        path = c.get("source_path") or c.get("id")
-        excerpt = (c.get("content") or "")[:1600]
+        title = c.title or "Untitled"
+        guest = c.guest or "unknown"
+        path = c.source_path or c.id
+        excerpt = (c.content or "")[:1600]
         ctx_lines.append(f"[{i+1}] {title} — {guest} — {path}\n{excerpt}\n")
     context_block = "\n---\n".join(ctx_lines) if ctx_lines else "(no context retrieved)"
     messages: list[dict] = [{"role": "system", "content": SHIP30_SYSTEM}]
@@ -85,13 +87,13 @@ ARTIFACT_SYSTEM_HTML = """You produce a complete, self-contained HTML snippet (n
 - Title at top as <h1>.
 """
 
-def build_artifact_messages(query: str, history: list[dict], contexts: list[dict], artifact_type: str) -> list[dict]:
+def build_artifact_messages(query: str, history: list[dict], contexts: Sequence[Passage], artifact_type: str) -> list[dict]:
     sys = ARTIFACT_SYSTEM_HTML if artifact_type == "html" else ARTIFACT_SYSTEM_MD
     ctx_lines = []
     for i, c in enumerate(contexts):
-        title = c.get("title") or "Untitled"
-        path = c.get("source_path") or c.get("id")
-        excerpt = (c.get("content") or "")[:1400]
+        title = c.title or "Untitled"
+        path = c.source_path or c.id
+        excerpt = (c.content or "")[:1400]
         ctx_lines.append(f"- {title} ({path}): {excerpt}\n")
     context_block = "\n".join(ctx_lines) if ctx_lines else "(no context)"
     messages: list[dict] = [{"role": "system", "content": sys}]

@@ -82,13 +82,10 @@ def chunk_text(text: str, title: str, guest: str) -> List[str]:
     return [header + c for c in raw_chunks]
 
 def get_embeddings(texts: List[str]) -> List[List[float]]:
-    # Use local MiniLM
-    from sentence_transformers import SentenceTransformer
-    model_name = getattr(settings, "embedding_model", "sentence-transformers/all-MiniLM-L6-v2")
-    model = SentenceTransformer(model_name)
-    # normalize for cosine
-    embs = model.encode(texts, normalize_embeddings=True, batch_size=32, show_progress_bar=False)
-    return embs.tolist()
+    # Single embedding path shared with serve-time retrieval: the configured
+    # provider/model applies symmetrically to writes and reads.
+    from app.services.embeddings import embed_texts_sync
+    return embed_texts_sync(texts)
 
 def ingest(reset: bool = False, dry_run: bool = False, limit: int | None = None):
     idx = load_index()

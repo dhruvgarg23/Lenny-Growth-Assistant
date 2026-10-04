@@ -3,6 +3,7 @@
 Every test crosses only answer() with a fake store / retriever / llm —
 no DB, no network, no provider keys.
 """
+from app.services.retrieval import Passage
 from app.services.conversation import (
     ABSTAIN_TEXT,
     AnswerRequest,
@@ -18,15 +19,15 @@ from app.services.conversation import (
 
 
 def make_chunk(score, cid="c1"):
-    return {
-        "id": cid,
-        "document_id": "d1",
-        "source_path": "podcasts/guest.md",
-        "title": "Episode",
-        "guest": "Guest",
-        "content": "x" * 500,
-        "rrf_score": score,
-    }
+    return Passage(
+        id=cid,
+        document_id="d1",
+        source_path="podcasts/guest.md",
+        title="Episode",
+        guest="Guest",
+        content="x" * 500,
+        rrf_score=score,
+    )
 
 
 class FakeStore:

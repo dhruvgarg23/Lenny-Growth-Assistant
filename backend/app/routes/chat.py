@@ -4,7 +4,6 @@ All pipeline logic (mode, retrieval, abstention, artifacts, persistence) lives i
 app.services.conversation. This module only maps HTTP ↔ events.
 """
 import json
-from functools import partial
 from typing import AsyncGenerator
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -13,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import runtime
 from app.services.database import get_db
 from app.models.schemas import ChatRequest
-from app.services.retrieval import hybrid_search
+from app.services.retrieval import HybridRetrieval
 from app.services import llm as llm_service
 from app.services.agent_router import detect_artifact_type
 from app.services.conversation import (
@@ -126,9 +125,10 @@ async def chat_stream(session_id: str, payload: ChatRequest, request: Request, d
         )
 
         async def event_gen() -> AsyncGenerator[str, None]:
+            index = HybridRetrieval(db)
             async for ev in answer(
                 req, store=store,
-                retriever=partial(hybrid_search, db),
+                retriever=index.search,
                 llm=ServiceLlm(),
             ):
                 for frame in _format(ev, req):

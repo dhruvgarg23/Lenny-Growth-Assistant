@@ -33,20 +33,18 @@ def embed_query_sync(text: str) -> List[float]:
 
 def _embed_ollama(texts: List[str]) -> List[List[float]]:
     url = f"{settings.ollama_base_url.rstrip('/')}/api/embed"
-    out: List[List[float]] = []
     with httpx.Client(timeout=60) as client:
-        for t in texts:
-            r = client.post(url, json={"model": settings.ollama_embed_model, "input": t})
-            r.raise_for_status()
-            j = r.json()
-            # Ollama embed returns {"embeddings": [[...]]} or {"embedding": [...]} depending on version
-            if "embeddings" in j:
-                out.append(j["embeddings"][0])
-            elif "embedding" in j:
-                out.append(j["embedding"])
-            else:
-                raise RuntimeError(f"Unexpected Ollama embed response: {j}")
-    return out
+        r = client.post(url, json={"model": settings.ollama_embed_model, "input": texts})
+        r.raise_for_status()
+        j = r.json()
+        # Batch input returns {"embeddings": [[...], ...]} positionally;
+        # single-text servers may return {"embedding": [...]} instead.
+        if "embeddings" in j:
+            return [list(e) for e in j["embeddings"]]
+        elif "embedding" in j:
+            return [list(j["embedding"])]
+        else:
+            raise RuntimeError(f"Unexpected Ollama embed response keys: {sorted(j.keys())}")
 
 def _embed_openai(texts: List[str]) -> List[List[float]]:
     from openai import OpenAI

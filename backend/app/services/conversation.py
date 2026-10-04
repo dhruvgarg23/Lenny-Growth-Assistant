@@ -16,13 +16,14 @@ Canon (settled in architecture review):
 import re
 import time
 from dataclasses import dataclass, field
-from typing import AsyncGenerator, Awaitable, Callable, Literal, Optional, Protocol
+from typing import AsyncGenerator, Awaitable, Callable, Literal, Optional, Protocol, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.db import Message, Session
+from app.services.retrieval import Passage
 from app.services.prompts import (
     build_artifact_messages,
     build_grounded_messages,
@@ -149,7 +150,7 @@ class Llm(Protocol):
     def stream_tokens(self, messages: list[dict]) -> AsyncGenerator[str, None]: ...
 
 
-Retriever = Callable[[str], Awaitable[list[dict]]]
+Retriever = Callable[[str], Awaitable[Sequence[Passage]]]
 
 
 class SqlAlchemyStore:
@@ -212,16 +213,16 @@ def _build_artifact(text: str, artifact_type: str) -> tuple[str, BuiltArtifact]:
     return raw, BuiltArtifact(type="markdown", content=raw, warnings=[])
 
 
-def _sources(contexts: list[dict]) -> tuple[SourceRef, ...]:
+def _sources(contexts: Sequence[Passage]) -> tuple[SourceRef, ...]:
     return tuple(
         SourceRef(
-            document_id=str(c["document_id"]),
-            chunk_id=str(c["id"]),
-            source_path=c["source_path"],
-            title=c["title"],
-            guest=c.get("guest"),
-            score=float(c.get("rrf_score") or 0),
-            excerpt=(c.get("content") or "")[:280],
+            document_id=c.document_id,
+            chunk_id=c.id,
+            source_path=c.source_path,
+            title=c.title,
+            guest=c.guest,
+            score=c.rrf_score,
+            excerpt=(c.content or "")[:280],
         )
         for c in contexts
     )
@@ -256,7 +257,7 @@ async def answer(
             logger.exception(f"Retrieval error: {e}")
             contexts = []
 
-        top_conf = float(contexts[0].get("rrf_score") or 0) if contexts else 0.0
+        top_conf = contexts[0].rrf_score if contexts else 0.0
         elapsed = lambda: int((time.perf_counter() - t0) * 1000)  # noqa: E731
 
         if not contexts or top_conf < settings.rag_min_confidence:

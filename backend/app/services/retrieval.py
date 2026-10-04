@@ -1,14 +1,14 @@
 """
 Hybrid retrieval — pgvector cosine + Postgres full-text (ts_rank) fused via RRF k=60.
 
-Observability additions:
-  - Structured logs on query embedding start/done with embedding latency.
-  - Metrics on vector vs keyword hits count, top scores, and candidate extraction.
-  - RRF fused ranking scores, top document titles/guests, and total retrieval duration.
-  - Clear diagnosis on vector-only fallback or zero result abstention.
+One module behind one seam: HybridRetrieval is constructed with its
+dependencies (session, embed function, result sizes) and exposes
+search(query) -> tuple[Passage, ...]. No settings reads, no network
+created inside — both are injected, so tests construct it directly.
 """
-import logging
-from typing import List, Dict, Any
+from dataclasses import dataclass
+from typing import Any, Awaitable, Callable, Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.config import settings
@@ -18,6 +18,28 @@ from app.observability.logger import get_logger, Timer
 logger = get_logger("lenny.retrieval")
 
 RRF_K = 60
+
+
+@dataclass(frozen=True)
+class Passage:
+    """One ranked transcript chunk. The only shape callers must know."""
+
+    id: str
+    document_id: str
+    content: str
+    title: str
+    source_path: str
+    guest: Optional[str]
+    vector_score: float = 0.0
+    text_score: float = 0.0
+    rrf_score: float = 0.0
+
+    @property
+    def confidence(self) -> float:
+        return self.rrf_score
+
+
+EmbedFn = Callable[[str], Awaitable[list[float]]]
 
 # Build the hybrid SQL — one round trip, tenant-free for now (single-tenant).
 # Uses vector <=> cosine distance and tsvector @@ websearch_to_tsquery.
@@ -100,110 +122,123 @@ ORDER BY c.embedding <=> CAST(:qvec AS vector)
 LIMIT :top_k;
 """)
 
-async def hybrid_search(db: AsyncSession, query: str, top_k: int | None = None, candidate_k: int | None = None) -> List[Dict[str, Any]]:
-    if not query or not query.strip():
-        logger.debug("retrieval_empty_query", extra={"event": "retrieval_skip", "reason": "empty_query"})
-        return []
-    top_k = top_k or settings.retrieval_k
-    candidate_k = candidate_k or settings.candidate_k
 
-    logger.info(
-        "retrieval_start",
-        extra={
-            "event": "retrieval_start",
-            "query_preview": query[:80],
-            "query_len": len(query),
-            "top_k": top_k,
-            "candidate_k": candidate_k,
-        },
+def _to_passage(r: Any) -> Passage:
+    return Passage(
+        id=str(r["id"]),
+        document_id=str(r["document_id"]),
+        content=r["content"],
+        title=r["title"],
+        source_path=r["source_path"],
+        guest=r["guest"],
+        vector_score=float(r["vector_score"] or 0),
+        text_score=float(r["text_score"] or 0),
+        rrf_score=float(r["rrf_score"] or 0),
     )
 
-    # Embed query (may be slow — do before DB tx holds connection)
-    with Timer() as embed_timer:
-        try:
-            qvec = await embed_query(query)
-        except Exception as e:
-            logger.error(
-                f"Embedding failed: {e}",
-                extra={"event": "embedding_error", "error": str(e), "duration_ms": embed_timer.elapsed_ms},
-                exc_info=True,
-            )
-            raise RuntimeError(f"Embedding failed: {e}") from e
 
-    logger.debug(
-        "query_embedded",
-        extra={
-            "event": "embedding_done",
-            "dim": len(qvec),
-            "duration_ms": embed_timer.elapsed_ms,
-        },
-    )
+class HybridRetrieval:
+    """Hybrid dense + lexical search fused via RRF. Dependencies injected."""
 
-    qvec_str = "[" + ",".join(f"{x:.6f}" for x in qvec) + "]"
+    def __init__(
+        self,
+        db: AsyncSession,
+        *,
+        embed: EmbedFn = embed_query,
+        top_k: Optional[int] = None,
+        candidate_k: Optional[int] = None,
+    ):
+        self._db = db
+        self._embed = embed
+        self._top_k = top_k or settings.retrieval_k
+        self._candidate_k = candidate_k or settings.candidate_k
 
-    with Timer() as search_timer:
-        try:
-            rows = (await db.execute(HYBRID_SQL, {"qvec": qvec_str, "qtext": query, "cand_k": candidate_k, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
-            used_fallback = False
-            # If hybrid returned nothing, fallback to vector-only
-            if not rows:
-                logger.warning(
-                    "hybrid_search_empty_fallback_to_vector",
-                    extra={"event": "retrieval_fallback", "query_preview": query[:80]},
-                )
-                rows = (await db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
-                used_fallback = True
+    async def search(self, query: str) -> tuple[Passage, ...]:
+        if not query or not query.strip():
+            logger.debug("retrieval_empty_query", extra={"event": "retrieval_skip", "reason": "empty_query"})
+            return ()
 
-            out: List[Dict[str, Any]] = []
-            for r in rows:
-                out.append({
-                    "id": str(r["id"]),
-                    "content": r["content"],
-                    "document_id": str(r["document_id"]),
-                    "title": r["title"],
-                    "source_path": r["source_path"],
-                    "guest": r["guest"],
-                    "vector_score": float(r["vector_score"] or 0),
-                    "text_score": float(r["text_score"] or 0),
-                    "rrf_score": float(r["rrf_score"] or 0),
-                    "confidence": float(r["rrf_score"] or 0),
-                })
+        logger.info(
+            "retrieval_start",
+            extra={
+                "event": "retrieval_start",
+                "query_preview": query[:80],
+                "query_len": len(query),
+                "top_k": self._top_k,
+                "candidate_k": self._candidate_k,
+            },
+        )
 
-            top_score = out[0]["rrf_score"] if out else 0.0
-            top_titles = [f"{c['title']} ({c.get('guest') or 'unknown'})" for c in out[:3]]
-            
-            logger.info(
-                f"retrieval_done hits={len(out)} top_score={top_score:.4f}",
-                extra={
-                    "event": "retrieval_done",
-                    "hits_count": len(out),
-                    "top_score": round(top_score, 4),
-                    "top_titles": top_titles,
-                    "used_fallback": used_fallback,
-                    "embed_duration_ms": embed_timer.elapsed_ms,
-                    "db_search_duration_ms": search_timer.elapsed_ms,
-                    "total_duration_ms": embed_timer.elapsed_ms + search_timer.elapsed_ms,
-                },
-            )
-            return out
-        except Exception as e:
-            logger.exception(f"Hybrid search SQL failed: {e}")
-            # Try vector-only as last resort
+        # Embed query (may be slow — do before DB tx holds connection)
+        with Timer() as embed_timer:
             try:
-                rows = (await db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": top_k, "rrf_k": RRF_K})).mappings().all()
-                out = [
-                    {"id": str(r["id"]), "content": r["content"], "document_id": str(r["document_id"]), "title": r["title"], "source_path": r["source_path"], "guest": r["guest"], "vector_score": float(r["vector_score"] or 0), "text_score": 0.0, "rrf_score": float(r["rrf_score"] or 0), "confidence": float(r["rrf_score"] or 0)}
-                    for r in rows
-                ]
-                logger.warning(
-                    f"retrieval_recovered_via_vector_only hits={len(out)}",
-                    extra={"event": "retrieval_recovered", "hits_count": len(out)},
-                )
-                return out
-            except Exception as e2:
+                qvec = await self._embed(query)
+            except Exception as e:
                 logger.error(
-                    f"Vector-only fallback also failed: {e2}",
-                    extra={"event": "retrieval_fatal_error", "error": str(e2)},
+                    f"Embedding failed: {e}",
+                    extra={"event": "embedding_error", "error": str(e), "duration_ms": embed_timer.elapsed_ms},
                     exc_info=True,
                 )
-                raise
+                raise RuntimeError(f"Embedding failed: {e}") from e
+
+        logger.debug(
+            "query_embedded",
+            extra={
+                "event": "embedding_done",
+                "dim": len(qvec),
+                "duration_ms": embed_timer.elapsed_ms,
+            },
+        )
+
+        qvec_str = "[" + ",".join(f"{x:.6f}" for x in qvec) + "]"
+
+        with Timer() as search_timer:
+            try:
+                rows = (await self._db.execute(HYBRID_SQL, {"qvec": qvec_str, "qtext": query, "cand_k": self._candidate_k, "top_k": self._top_k, "rrf_k": RRF_K})).mappings().all()
+                used_fallback = False
+                # If hybrid returned nothing, fallback to vector-only
+                if not rows:
+                    logger.warning(
+                        "hybrid_search_empty_fallback_to_vector",
+                        extra={"event": "retrieval_fallback", "query_preview": query[:80]},
+                    )
+                    rows = (await self._db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": self._top_k, "rrf_k": RRF_K})).mappings().all()
+                    used_fallback = True
+
+                out = tuple(_to_passage(r) for r in rows)
+
+                top_score = out[0].rrf_score if out else 0.0
+                top_titles = [f"{c.title} ({c.guest or 'unknown'})" for c in out[:3]]
+
+                logger.info(
+                    f"retrieval_done hits={len(out)} top_score={top_score:.4f}",
+                    extra={
+                        "event": "retrieval_done",
+                        "hits_count": len(out),
+                        "top_score": round(top_score, 4),
+                        "top_titles": top_titles,
+                        "used_fallback": used_fallback,
+                        "embed_duration_ms": embed_timer.elapsed_ms,
+                        "db_search_duration_ms": search_timer.elapsed_ms,
+                        "total_duration_ms": embed_timer.elapsed_ms + search_timer.elapsed_ms,
+                    },
+                )
+                return out
+            except Exception as e:
+                logger.exception(f"Hybrid search SQL failed: {e}")
+                # Try vector-only as last resort
+                try:
+                    rows = (await self._db.execute(VECTOR_ONLY_SQL, {"qvec": qvec_str, "top_k": self._top_k, "rrf_k": RRF_K})).mappings().all()
+                    out = tuple(_to_passage(r) for r in rows)
+                    logger.warning(
+                        f"retrieval_recovered_via_vector_only hits={len(out)}",
+                        extra={"event": "retrieval_recovered", "hits_count": len(out)},
+                    )
+                    return out
+                except Exception as e2:
+                    logger.error(
+                        f"Vector-only fallback also failed: {e2}",
+                        extra={"event": "retrieval_fatal_error", "error": str(e2)},
+                        exc_info=True,
+                    )
+                    raise
