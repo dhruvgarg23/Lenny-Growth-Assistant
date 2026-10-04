@@ -433,6 +433,30 @@ async def _anthropic_stream(messages: List[Dict[str, str]], model: str) -> Async
     )
 
 
+# ── Availability capability ───────────────────────────────────────────────────
+async def check_available() -> tuple[bool, str | None]:
+    """Capability query: is the active provider reachable/configured?
+
+    Returns (ok, hint). Lets callers gate work without importing provider
+    specifics. Provider knowledge stays in this module.
+    """
+    provider = runtime.provider
+    if provider == "ollama":
+        ok = await ollama_health()
+        hint = None if ok else (
+            "Ollama is not reachable at OLLAMA_BASE_URL. "
+            "Start it with: ollama serve && ollama pull llama3.1:8b"
+        )
+        return ok, hint
+    if provider == "anthropic":
+        ok = bool(runtime.anthropic_api_key)
+        return ok, None if ok else "ANTHROPIC_API_KEY not configured (selected provider is anthropic)"
+    if provider == "groq":
+        ok = bool(runtime.groq_api_key)
+        return ok, None if ok else "GROQ_API_KEY not configured (selected provider is groq)"
+    return False, f"Unknown LLM_PROVIDER: {provider}"
+
+
 # ── Public facade ─────────────────────────────────────────────────────────────
 async def generate(messages: List[Dict[str, str]]) -> str:
     provider = runtime.provider

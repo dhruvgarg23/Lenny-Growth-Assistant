@@ -270,8 +270,7 @@ If an exception occurs during streaming, an `event: error` envelope is dispatche
 - `GET /api/sessions/{id}/messages` — Retrieves ordered conversation history for a session.
 
 ### Chat
-- `POST /api/sessions/{id}/chat` — Non-streaming fallback endpoint.
-- `POST /api/sessions/{id}/chat/stream` — SSE streaming endpoint emitting status, sources, token deltas, and artifact payloads.
+- `POST /api/sessions/{id}/chat/stream` — SSE streaming endpoint emitting status, sources, token deltas, and artifact payloads. Streaming is the only chat transport; the conversation pipeline (`app/services/conversation.py`) is transport-agnostic and tested through its own seam.
 
 ## 12. Request Tracing
 

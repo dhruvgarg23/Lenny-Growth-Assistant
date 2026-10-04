@@ -71,7 +71,7 @@ export function streamChat(sessionId, payload, handlers) {
         else if (event === 'artifact') handlers.onArtifact?.(parsed)
         else if (event === 'done') handlers.onDone?.(parsed)
         else if (event === 'error') handlers.onError?.(parsed)
-        else handlers.onToken?.(parsed)
+        else handlers.onError?.({ detail: `Unknown SSE event: ${event}` })
       }
     }
   }).catch((e) => {
