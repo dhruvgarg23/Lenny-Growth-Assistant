@@ -9,7 +9,7 @@ A full-stack, AI-powered conversational web application that ingests transcripts
 - **Ship 30 for 30 essays:** Dedicated content skill generating ~1,250-word atomic essays adhering to the 5 writing pillars.
 - **Markdown/HTML artifacts:** Generates formatted memos, comparison matrices, and interactive prototypes.
 - **Local Ollama:** Mandatory offline demo runner using `llama3.1:8b` with zero external API dependencies.
-- **Anthropic / Groq cloud models:** Pluggable cloud intelligence via Anthropic Claude Agent SDK or Groq.
+- **Anthropic / Groq cloud models:** Pluggable cloud intelligence via Anthropic Claude or Groq.
 - **Hybrid retrieval:** Combines pgvector dense embeddings (384d) and lexical TSVector search via Reciprocal Rank Fusion (RRF).
 - **Sandboxed artifact rendering:** Multi-layer containment via Bleach sanitization and isolated iframe sandbox.
 

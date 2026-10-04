@@ -13,9 +13,8 @@ FastAPI Backend Service
   ├── Session Management Service
   ├── Chat Orchestration Service
   ├── Intent Router
-  ├── Retrieval Service (Hybrid RRF)
-  ├── Agent Layer (Anthropic Claude Agent SDK)
-  ├── LLM Service (Ollama / Anthropic / Groq)
+   ├── Retrieval Service (Hybrid RRF)
+   ├── LLM Facade (Ollama / Anthropic / Groq adapters)
   └── Artifact Sanitization Service
        │
        ├────────────────────────────────┐
@@ -36,8 +35,8 @@ PostgreSQL 16 + pgvector       Pluggable Model Providers
 ### FastAPI Service (`backend/app/`)
 - **Responsibilities:** Request lifecycle, Pydantic input/output validation, CORS headers, distributed request correlation ID injection (`X-Request-ID`), structured logging, and SSE streaming.
 
-### Agent Layer (`backend/app/agent/`)
-- **Responsibilities:** Multi-tool orchestration, Anthropic Claude Agent SDK integration, tool calling execution, and skill prompt assembly.
+### Skill Prompts (`backend/app/services/prompts.py`, `backend/app/skills/ship30/`)
+- **Responsibilities:** Mode-specific prompt assembly (grounded chat, Ship 30 essay, artifact) and the 5-pillar Ship 30 for 30 playbook. Multi-turn tool calling does not exist yet — a future agent loop belongs behind the conversation module's seam as an adapter, not as a parallel pipeline.
 
 ### Retrieval Service (`backend/app/services/retrieval.py`)
 - **Responsibilities:** Dense vector cosine search (`pgvector`), lexical full-text search (`tsvector`), Reciprocal Rank Fusion (RRF) score merging, and confidence scoring.
@@ -188,21 +187,25 @@ Intent Router (`app/services/agent_router.py`)
 
 The router prevents every request from being handled as a generic chat completion, directing requests to dedicated prompt and tool pipelines.
 
-## 7. Agent Tools & Skills
+## 7. Skills
 
-### Tool Definitions (`backend/app/agent/tools.py`)
+Mode-specific behavior is prompt assembly, not tool calling — no agent runtime
+or tool schemas exist in the codebase (a previous `backend/app/agent/` duplicate
+pipeline was deleted as uncalled dead code; see ADR-worthy note below). The
+conversation module (`backend/app/services/conversation.py`) selects prompts by
+explicit mode:
 
-1. **`search_transcripts`**
-   - **Schema:** `{ "query": "string" }`
-   - **Function:** Executes hybrid dense vector + lexical search over podcast transcripts and returns structured source metadata with confidence scores.
+- **chat** → `build_grounded_messages`: grounded Q&A with citations.
+- **ship30** → `build_ship30_messages`: applies the 5-pillar Ship 30 for 30
+  playbook ([`backend/app/skills/ship30/SKILL.md`](backend/app/skills/ship30/SKILL.md))
+  — ~1,250-word atomic essay, high-voltage headline, 1/3/1 rhythm, bold
+  subheads, bulleted frameworks, grounded citations.
+- **artifact** → `build_artifact_messages`: generates Markdown or HTML for the
+  split-pane viewer; HTML is sanitized by `backend/app/services/artifacts.py`.
 
-2. **`apply_ship30_skill`**
-   - **Schema:** `{ "topic": "string" }`
-   - **Function:** Applies the 5-pillar Ship 30 for 30 playbook ([`backend/app/skills/ship30/SKILL.md`](backend/app/skills/ship30/SKILL.md)) to structure answers into a ~1,250-word atomic essay with high-voltage headlines, 1/3/1 sentence rhythm, bold subheads, bulleted frameworks, and grounded citations.
-
-3. **`render_artifact`**
-   - **Schema:** `{ "artifact_type": "html" | "markdown", "title": "string", "content": "string" }`
-   - **Function:** Generates, validates, and sanitizes rich HTML or Markdown documents for native display in the split-pane artifact viewer.
+A future multi-turn tool-calling loop (e.g. `search_transcripts`,
+`render_artifact`) belongs behind the conversation seam, reusing its retrieval,
+abstention, and persistence rather than re-implementing them.
 
 ## 8. Model Provider Architecture
 
