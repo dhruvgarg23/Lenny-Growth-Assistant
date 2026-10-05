@@ -37,7 +37,7 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=8000)
     mode: Literal["chat", "ship30", "artifact"] = "chat"
     # artifact sub-type
-    artifact_type: Optional[Literal["markdown", "html"]] = None
+    artifact_type: Optional[Literal["markdown"]] = None
 
 class ChatStreamEvent(BaseModel):
     event: str
@@ -59,6 +59,6 @@ class ConfigOut(BaseModel):
 
 # ── Artifact ──
 class ArtifactOut(BaseModel):
-    type: Literal["markdown", "html"]
+    type: Literal["markdown"]
     content: str
     title: Optional[str] = None

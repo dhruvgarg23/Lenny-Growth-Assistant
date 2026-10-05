@@ -10,11 +10,12 @@ def test_route_explicit_mode_wins():
     assert route_intent("anything ship 30", requested_mode="chat") == "chat"
     assert route_intent("render an HTML one-pager", requested_mode="chat") == "chat"
 
-def test_detect_artifact_type():
-    assert detect_artifact_type("make html artifact") == "html"
+def test_detect_artifact_type_always_markdown():
+    # HTML artifacts were removed; every artifact request produces Markdown.
+    assert detect_artifact_type("make html artifact") == "markdown"
     assert detect_artifact_type("markdown doc") == "markdown"
-    assert detect_artifact_type("anything", explicit="html") == "html"
-    assert detect_artifact_type("no hint") == "html"  # default
+    assert detect_artifact_type("anything", explicit="html") == "markdown"
+    assert detect_artifact_type("no hint") == "markdown"  # default
 
 
 def test_anthropic_payload_preparation():

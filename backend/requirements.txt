@@ -24,9 +24,6 @@ python-dotenv>=1.0.1
 anthropic>=0.40.0
 # Cloud LLM / Groq (OpenAI-compatible)
 openai>=1.50.0
-# Sanitization for artifacts
-bleach>=6.1.0
-tinycss2>=1.3.0
 # Tests
 pytest>=8.0.0
 pytest-asyncio>=0.23.0

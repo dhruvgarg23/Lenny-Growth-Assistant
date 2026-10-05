@@ -75,20 +75,11 @@ def build_ship30_messages(query: str, history: list[dict], contexts: Sequence[Pa
     return messages
 
 
-# Artifact prompt — HTML vs Markdown branching
+# Artifact prompt — Markdown only
 ARTIFACT_SYSTEM_MD = """You produce a well-structured Markdown document grounded in Lenny transcript context. Use headings, tables, bullets, bold where helpful. Cite sources inline as [source: path]. Keep it practical and ready to copy into Notion/Google Docs."""
 
-ARTIFACT_SYSTEM_HTML = """You produce a complete, self-contained HTML snippet (no <html>/<head>/<body> wrapper needed — just the inner content with <style>). Requirements:
-- Inline <style> with clean, modern CSS (system font, max-width 780px, good spacing, card styles). No external URLs.
-- Use semantic headings, bullets, tables, bold, callouts.
-- Grounded in CONTEXT — cite sources inline as small footnotes e.g. <span class="cite">[source: path]</span>.
-- Do NOT include <script>, <iframe>, <form>, <object>, <embed>, on* handlers, or external resources.
-- Keep CSS scoped, no position:fixed, no @import, no url().
-- Title at top as <h1>.
-"""
-
-def build_artifact_messages(query: str, history: list[dict], contexts: Sequence[Passage], artifact_type: str) -> list[dict]:
-    sys = ARTIFACT_SYSTEM_HTML if artifact_type == "html" else ARTIFACT_SYSTEM_MD
+def build_artifact_messages(query: str, history: list[dict], contexts: Sequence[Passage]) -> list[dict]:
+    sys = ARTIFACT_SYSTEM_MD
     ctx_lines = []
     for i, c in enumerate(contexts):
         title = c.title or "Untitled"
@@ -99,5 +90,5 @@ def build_artifact_messages(query: str, history: list[dict], contexts: Sequence[
     messages: list[dict] = [{"role": "system", "content": sys}]
     for m in history[-6:]:
         messages.append({"role": m["role"], "content": m["content"]})
-    messages.append({"role": "user", "content": f"CONTEXT:\n{context_block}\n\nREQUEST: {query}\n\nGenerate the {artifact_type.upper()} artifact now. CITE sources."})
+    messages.append({"role": "user", "content": f"CONTEXT:\n{context_block}\n\nREQUEST: {query}\n\nGenerate the MARKDOWN artifact now. CITE sources."})
     return messages

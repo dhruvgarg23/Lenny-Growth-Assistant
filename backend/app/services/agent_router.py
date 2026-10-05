@@ -24,12 +24,5 @@ def route_intent(message: str, requested_mode: str | None = None) -> str:
     return "chat"
 
 def detect_artifact_type(message: str, explicit: str | None = None) -> str:
-    if explicit in ("markdown", "html"):
-        return explicit
-    low = message.lower()
-    if "html" in low:
-        return "html"
-    if "markdown" in low or ".md" in low:
-        return "markdown"
-    # default: html for artifacts (richer)
-    return "html"
+    # Markdown-only artifacts; the explicit/keyword hints are accepted but ignored.
+    return "markdown"

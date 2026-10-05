@@ -100,8 +100,8 @@ def test_artifact_panel_docks_on_content_fit():
 
 def test_pane_footers_and_frame_stay_stable():
     assert SIDEBAR.count("shrink-0") >= 2  # list header/footer never compress away
+    assert "<iframe" not in ARTIFACT  # markdown-only viewer: no fixed-height frame
     assert "min-h-[520px]" not in ARTIFACT
-    assert "dvh" in ARTIFACT
 
 
 def test_dom_order_matches_reading_order():

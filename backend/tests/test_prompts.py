@@ -18,8 +18,8 @@ def test_ship30_has_headline_and_citations():
     assert "Ship 30" in sys
     assert "1,250" in sys
 
-def test_artifact_html_has_safety_rules():
-    msgs = build_artifact_messages("make one-pager", [], [passage(content="x")], "html")
+def test_artifact_markdown_has_citation_rules():
+    msgs = build_artifact_messages("make one-pager", [], [passage(content="x")])
     sys = msgs[0]["content"]
-    assert "<script>" not in sys or "Do NOT include <script>" in sys
+    assert "Markdown" in sys
     assert "cite" in sys.lower()

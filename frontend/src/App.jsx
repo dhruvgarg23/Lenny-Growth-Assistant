@@ -12,7 +12,6 @@ export default function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [mode, setMode] = useState('chat') // chat | ship30 | artifact
-  const [artifactType, setArtifactType] = useState('markdown')
   const [streamingText, setStreamingText] = useState('')
   const [streamingSources, setStreamingSources] = useState([])
   const [status, setStatus] = useState('')
@@ -63,7 +62,7 @@ export default function App() {
   function handleSend() {
     if (!input.trim() || !activeId) return
     const text = input.trim()
-    const payload = { message: text, mode, artifact_type: mode === 'artifact' ? artifactType : undefined }
+    const payload = { message: text, mode, artifact_type: mode === 'artifact' ? 'markdown' : undefined }
     // optimistic user
     const tmpId = 'tmp-' + Date.now()
     setMessages(prev => [...prev, { id: tmpId, role: 'user', content: text, sources: [] }])
@@ -239,13 +238,6 @@ export default function App() {
                         <button key={k} onClick={() => setMode(k)} className={`rounded-full px-3 py-1 font-medium ${mode === k ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-50'}`}>{label}</button>
                       ))}
                     </div>
-                    {mode === 'artifact' && (
-                      <div className="flex rounded-full border border-zinc-200 p-1">
-                        {['markdown','html'].map(t => (
-                          <button key={t} onClick={() => setArtifactType(t)} className={`rounded-full px-3 py-1 font-medium ${artifactType === t ? 'bg-zinc-900 text-white' : 'text-zinc-600'}`}>{t}</button>
-                        ))}
-                      </div>
-                    )}
                     {artifact && (
                       <button onClick={() => setShowArtifact(v => !v)} className="rounded-full border border-zinc-200 px-3 py-1 font-medium hover:bg-zinc-50">
                         {showArtifact ? 'Hide artifact' : 'Show artifact'}
@@ -261,7 +253,7 @@ export default function App() {
                       onKeyDown={e => {
                         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
                       }}
-                      placeholder={mode === 'ship30' ? 'Topic for a ~1,250-word Ship 30 essay (e.g., How Lenny guests think about retention loops)' : mode === 'artifact' ? 'Describe the artifact (e.g., Artifact: HTML one-pager comparing PLG vs sales-led motions)' : 'Ask anything grounded in Lenny transcripts…'}
+                      placeholder={mode === 'ship30' ? 'Topic for a ~1,250-word Ship 30 essay (e.g., How Lenny guests think about retention loops)' : mode === 'artifact' ? 'Describe the artifact (e.g., Artifact: markdown doc comparing PLG vs sales-led motions)' : 'Ask anything grounded in Lenny transcripts…'}
                       rows={2}
                       className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                     />

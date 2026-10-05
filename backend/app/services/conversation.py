@@ -48,7 +48,7 @@ class AnswerRequest:
     question: str
     session_id: str
     mode: Mode = "chat"
-    artifact_type: Optional[Literal["markdown", "html"]] = None
+    artifact_type: Optional[Literal["markdown"]] = None
     request_id: str = "-"
 
 
@@ -214,7 +214,7 @@ async def answer(
     t0 = time.perf_counter()
     provider, model = llm.identity
     mode = req.mode  # explicit mode always wins; no keyword override
-    artifact_type = req.artifact_type if mode == "artifact" else None
+    artifact_type = "markdown" if mode == "artifact" else None
 
     try:
         ok, hint = await llm.check_available()
@@ -258,7 +258,7 @@ async def answer(
         if mode == "ship30":
             messages = build_ship30_messages(req.question, history, contexts)
         elif mode == "artifact":
-            messages = build_artifact_messages(req.question, history, contexts, artifact_type)
+            messages = build_artifact_messages(req.question, history, contexts)
         else:
             messages = build_grounded_messages(req.question, history, contexts)
 
@@ -270,7 +270,7 @@ async def answer(
 
         artifact = None
         if mode == "artifact":
-            full, artifact = prepare_artifact(full, artifact_type or "html")
+            full, artifact = prepare_artifact(full)
             yield ArtifactReady(artifact=artifact)
 
         meta = {

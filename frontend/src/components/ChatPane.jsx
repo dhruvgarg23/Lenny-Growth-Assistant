@@ -41,7 +41,7 @@ export default function ChatPane({ messages, streamingText, streamingSources, st
               </div>
               <div className="mt-4 flex flex-wrap gap-3 text-xs">
                 <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-violet-700">Tip: add “ship 30” for a 1,250-word essay</span>
-                <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700">Or “artifact: HTML one-pager” to render beside chat</span>
+                <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700">Or “artifact: markdown doc” to render beside chat</span>
               </div>
             </div>
           </div>

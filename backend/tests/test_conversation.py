@@ -165,15 +165,15 @@ async def test_explicit_mode_flows_through_untouched():
     assert any(isinstance(e, Done) for e in events)
 
 
-async def test_artifact_html_extracts_fence_then_sanitizes_once():
+async def test_artifact_markdown_extracts_fence():
     events, store = await collect(
-        req(mode="artifact", artifact_type="html"),
+        req(mode="artifact", artifact_type="markdown"),
         retriever=lambda q: _const([make_chunk(0.05)]),
-        llm=FakeLlm(['```html<h1>Hi</h1><script>evil()</script>```']),
+        llm=FakeLlm(['```markdown\n# Hi\n- item\n```']),
     )
     ready = next(e for e in events if isinstance(e, ArtifactReady))
-    assert ready.artifact.type == "html"
-    assert "<script>" not in ready.artifact.content
+    assert ready.artifact.type == "markdown"
+    assert ready.artifact.content == "# Hi\n- item"
     assert "```" not in ready.artifact.content
     assert store.assistant_msgs[0]["content"] == ready.artifact.content
 

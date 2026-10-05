@@ -11,4 +11,4 @@ Domain language for the Lenny Growth Assistant. Terms only — no implementation
 - **Abstention**: the explicit, polite response given when no chunk meets the confidence threshold, plus guidance toward supported topics.
 - **Mode**: the output contract the user selects — `chat`, `ship30`, or `artifact`. Explicit selection always wins; it is never overridden by keyword guessing.
 - **Ship 30 essay**: a ~1,250-word atomic essay in the Ship 30 for 30 form (strong headline, 1/3/1 rhythm, bold subheads, bulleted frameworks, actionable takeaway).
-- **Artifact**: a reusable rendered output — Markdown or HTML/CSS — produced beside the conversation and isolated from the application.
+- **Artifact**: a reusable Markdown output produced beside the conversation.
