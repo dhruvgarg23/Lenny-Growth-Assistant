@@ -24,7 +24,7 @@ export default function ArtifactViewer({ artifact, onClose }) {
     <div className="flex h-full flex-col bg-white">
       <div className="flex items-center justify-between border-b border-zinc-200 px-3 py-2 text-xs">
         <span className="rounded-full bg-zinc-900 px-2.5 py-1 font-medium text-white">{artifact.type.toUpperCase()} artifact</span>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={() => {
               navigator.clipboard.writeText(artifact.content)
@@ -52,7 +52,7 @@ export default function ArtifactViewer({ artifact, onClose }) {
               sandbox="allow-scripts allow-popups"
               referrerPolicy="no-referrer"
               srcDoc={content}
-              className="h-[70vh] min-h-[520px] w-full rounded-xl"
+              className="h-[70dvh] w-full rounded-xl"
             />
           )}
         </div>

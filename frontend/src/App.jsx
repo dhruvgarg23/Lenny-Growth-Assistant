@@ -19,6 +19,7 @@ export default function App() {
   const [artifact, setArtifact] = useState(null)
   const [showArtifact, setShowArtifact] = useState(true)
   const [modelMenuOpen, setModelMenuOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [switching, setSwitching] = useState(false)
   const streamRef = useRef(null)
   const modelMenuRef = useRef(null)
@@ -152,28 +153,31 @@ export default function App() {
   const allowedModels = runtimeState?.allowed_models || config?.allowed_models || {}
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-zinc-50">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-[11px] font-bold text-white">LP</div>
-          <div>
-            <h1 className="text-sm font-semibold leading-none">Lenny Growth Assistant</h1>
-            <p className="text-[11px] text-zinc-500">Grounded in Lenny’s Podcast transcripts • cites sources</p>
+    <div className="flex h-dvh w-full flex-col bg-zinc-50">
+      <header className="flex min-h-12 shrink-0 items-center justify-between gap-2 border-b border-zinc-200 bg-white px-4 pt-[env(safe-area-inset-top)]">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <button onClick={() => setSidebarOpen(true)} aria-label="Open sessions" className="shrink-0 rounded-lg border border-zinc-200 px-2 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 md:hidden">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-[11px] font-bold text-white">LP</div>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold leading-none">Lenny Growth Assistant</h1>
+            <p className="truncate text-[11px] text-zinc-500">Grounded in Lenny’s Podcast transcripts • cites sources</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 text-xs">
           <div className="relative" ref={modelMenuRef}>
             <button
               onClick={() => setModelMenuOpen(v => !v)}
               disabled={switching}
               title="Click to switch model"
-              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium cursor-pointer transition-colors ${badgeColor === 'emerald' ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
+              className={`flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium cursor-pointer transition-colors ${badgeColor === 'emerald' ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
             >
-              {switching ? '⟳ switching…' : `${providerLabel.toUpperCase()} • ${selectedModel || '—'} • ${statusText}`}
+              {switching ? '⟳ switching…' : (<><span className="max-w-[38vw] truncate sm:max-w-64">{`${providerLabel.toUpperCase()} • ${selectedModel || '—'}`}</span><span className="shrink-0">• {statusText}</span></>)}
               <svg className="h-3 w-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             </button>
             {modelMenuOpen && (
-              <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
+              <div className="absolute end-0 top-full z-50 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
                 {Object.entries(allowedModels).map(([prov, models]) => (
                   <div key={prov}>
                     <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
@@ -185,7 +189,7 @@ export default function App() {
                         <button
                           key={`${prov}-${m}`}
                           onClick={() => handleModelSwitch(prov, m)}
-                          className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-zinc-50 ${
+                          className={`flex w-full items-center gap-2 break-words px-3 py-2 text-start text-xs hover:bg-zinc-50 ${
                             isActive ? 'bg-zinc-100 font-semibold text-zinc-900' : 'text-zinc-700'
                           }`}
                         >
@@ -199,7 +203,7 @@ export default function App() {
               </div>
             )}
           </div>
-          <span className={`hidden rounded-full border px-2.5 py-1 text-zinc-600 sm:inline ${dbOk ? 'border-zinc-200 bg-white' : 'border-red-200 bg-red-50 text-red-700'}`}>{dbOk ? 'DB connected' : 'DB degraded'}</span>
+          <span className={`rounded-full border px-2.5 py-1 text-zinc-600 ${dbOk ? 'border-zinc-200 bg-white' : 'border-red-200 bg-red-50 text-red-700'}`}>{dbOk ? 'DB connected' : 'DB degraded'}</span>
           <span className="hidden text-zinc-400 sm:inline">v{health?.version || '1.0.0'}</span>
         </div>
       </header>
@@ -223,9 +227,9 @@ export default function App() {
                 <ChatPane messages={messages} streamingText={streamingText} streamingSources={streamingSources} status={status} onExample={(q) => setInput(q)} />
               </div>
 
-              <div className="shrink-0 border-t border-zinc-200 bg-white p-3">
-                <div className="mx-auto flex max-w-3xl flex-col gap-2">
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
+              <div className="shrink-0 border-t border-zinc-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <div className="mx-auto flex max-w-2xl flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
                     <div className="flex rounded-full border border-zinc-200 p-1">
                       {[
                         ['chat', 'Chat'],
@@ -250,7 +254,7 @@ export default function App() {
                     <span className="text-zinc-400">Enter to send • Shift+Enter newline</span>
                   </div>
 
-                  <div className="flex items-end gap-2">
+                  <div className="flex items-end gap-3">
                     <textarea
                       value={input}
                       onChange={e => setInput(e.target.value)}
@@ -269,25 +273,34 @@ export default function App() {
           )}
         </div>
 
+        {/* Dock the artifact beside chat once sidebar (300) + panel (~440) + readable chat fit, ≈1200px */}
         {showArtifact && artifact && (
-          <div className="hidden w-[520px] shrink-0 border-l border-zinc-200 bg-white xl:flex xl:flex-col">
+          <div className="hidden w-[min(440px,36vw)] shrink-0 border-s border-zinc-200 bg-white min-[1200px]:flex min-[1200px]:flex-col">
             <ArtifactViewer artifact={artifact} onClose={() => setShowArtifact(false)} />
           </div>
         )}
       </div>
 
-      {/* Mobile artifact drawer */}
-      {showArtifact && artifact && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-white xl:hidden">
-          <div className="flex h-12 items-center justify-between border-b px-4">
-            <span className="text-sm font-semibold">Artifact</span>
-            <button onClick={() => setShowArtifact(false)} className="rounded-xl border px-3 py-1.5 text-sm">Close</button>
+      {/* Mobile sessions drawer */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button aria-label="Close sessions" onClick={() => setSidebarOpen(false)} className="absolute inset-0 cursor-default bg-zinc-900/40" />
+          <div className="absolute inset-y-0 start-0 flex w-[300px] max-w-[85vw] shadow-xl">
+            <SessionSidebar sessions={sessions} activeId={activeId} onSelect={(id) => { setActiveId(id); setSidebarOpen(false) }} onNew={async () => { await handleNew(); setSidebarOpen(false) }} onDelete={handleDelete} />
           </div>
-          <div className="flex-1 overflow-hidden"><ArtifactViewer artifact={artifact} /></div>
         </div>
       )}
 
-      {/* Mobile session toggle could be added */}
+      {/* Mobile artifact drawer */}
+      {showArtifact && artifact && (
+        <div className="fixed inset-0 z-40 flex flex-col bg-white min-[1200px]:hidden">
+          <div className="flex min-h-12 items-center justify-between border-b px-4 pt-[env(safe-area-inset-top)]">
+            <span className="text-sm font-semibold">Artifact</span>
+            <button onClick={() => setShowArtifact(false)} className="rounded-xl border px-3 py-1.5 text-sm">Close</button>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]"><ArtifactViewer artifact={artifact} /></div>
+        </div>
+      )}
     </div>
   )
 }

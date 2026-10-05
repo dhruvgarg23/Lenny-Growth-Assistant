@@ -36,10 +36,10 @@ export default function ChatPane({ messages, streamingText, streamingSources, st
                   'What does Lenny’s Podcast recommend for PLG pricing vs. sales-led?',
                   'Summarize advice on building a product-led growth engine',
                 ].map(q => (
-                  <button key={q} onClick={() => onExample(q)} className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-left text-sm hover:bg-zinc-100">{q}</button>
+                  <button key={q} onClick={() => onExample(q)} className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-start text-sm hover:bg-zinc-100">{q}</button>
                 ))}
               </div>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+              <div className="mt-4 flex flex-wrap gap-3 text-xs">
                 <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-violet-700">Tip: add “ship 30” for a 1,250-word essay</span>
                 <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700">Or “artifact: HTML one-pager” to render beside chat</span>
               </div>
